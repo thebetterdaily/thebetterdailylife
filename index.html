@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Better Daily Life — get 1% better every day</title>
+<meta name="description" content="An initiative for getting better through continuous learning. A podcast, a newsletter, and free financial education for the next generation." />
+<meta property="og:title" content="The Better Daily Life" />
+<meta property="og:description" content="Get 1% better every day. Podcast, newsletter, and free financial education." />
+<meta property="og:type" content="website" />
+
+<!-- Google Sign-In library (used by the Financial Education hub) -->
+<script src="https://accounts.google.com/gsi/client" async></script>
+<!-- Chart library for the financial tools -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2315171C'/%3E%3Cpath d='M6 22 C12 22 12 10 16 10 C20 10 20 16 26 16' stroke='url(%23g)' stroke-width='3.5' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='26' cy='16' r='3' fill='%23FF9A3D'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='6' y1='22' x2='26' y2='10'%3E%3Cstop stop-color='%23FF6A3D'/%3E%3Cstop offset='1' stop-color='%23FFC24B'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E" />
+
+<style>
+  :root{
+    --ink:#15171c;        /* near-black, warm */
+    --ink2:#2c313b;
+    --body:#4c5560;       /* body text on light */
+    --muted:#7b8794;
+    --paper:#fbf8f3;      /* warm off-white */
+    --paper2:#f2ede4;
+    --line:#e8e1d6;
+    --coral:#ff6a3d;      /* sunrise — master accent */
+    --coral-d:#e5511f;
+    --gold:#ffc24b;       /* amber highlight */
+    --green:#1fa46a;      /* growth / finance */
+    --green-d:#16864f;
+    --teal:#0e9aa7;       /* podcast accent */
+    --plum:#7b61ff;       /* newsletter accent */
+    --card:#ffffff;
+    --shadow:0 24px 60px -22px rgba(21,23,28,.30);
+    --shadow-sm:0 10px 30px -14px rgba(21,23,28,.22);
+    --r:24px; --r-sm:14px;
+    --sun:linear-gradient(105deg,var(--coral),var(--gold));
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--body);
+    font-family:"Inter",system-ui,sans-serif; font-size:17px; line-height:1.6; font-weight:450;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  h1,h2,h3,h4,.dpl{font-family:"Bricolage Grotesque",sans-serif; color:var(--ink); line-height:1.04; letter-spacing:-.02em; margin:0 0 .45em; font-weight:700;}
+  p{margin:0 0 1em}
+  a{color:var(--coral-d); text-decoration:none; font-weight:600}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1140px; margin:0 auto; padding:0 22px}
+  .narrow{max-width:760px}
+  ::selection{background:var(--gold); color:var(--ink)}
+
+  /* buttons */
+  .btn{display:inline-flex; align-items:center; gap:9px; border:0; cursor:pointer; font-family:"Bricolage Grotesque";
+    font-weight:600; font-size:16px; padding:14px 24px; border-radius:999px; transition:transform .15s, box-shadow .15s, background .15s; text-decoration:none}
+  .btn:hover{text-decoration:none; transform:translateY(-2px)}
+  .btn:active{transform:translateY(0)}
+  .btn-sun{background:var(--sun); color:#fff; box-shadow:0 12px 26px -10px var(--coral)}
+  .btn-dark{background:var(--ink); color:#fff}
+  .btn-light{background:#fff; color:var(--ink); box-shadow:var(--shadow-sm); border:1px solid var(--line)}
+  .btn-ghost{background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.35)}
+  .btn-green{background:var(--green); color:#fff; box-shadow:0 12px 26px -10px var(--green)}
+  :focus-visible{outline:3px solid var(--plum); outline-offset:3px; border-radius:6px}
+
+  .eyebrow{display:inline-flex; align-items:center; gap:8px; font-family:"Bricolage Grotesque"; font-weight:600;
+    font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--coral-d);}
+  .eyebrow:before{content:""; width:26px; height:2px; background:var(--coral); border-radius:2px}
+
+  /* ---------- nav ---------- */
+  header.nav{position:sticky; top:0; z-index:50; background:rgba(251,248,243,.82); backdrop-filter:blur(12px);
+    border-bottom:1px solid transparent; transition:border-color .2s, background .2s}
+  header.nav.scrolled{border-color:var(--line)}
+  .nav-in{display:flex; align-items:center; gap:20px; max-width:1180px; margin:0 auto; padding:14px 22px}
+  .logo{display:flex; align-items:center; gap:11px; cursor:pointer; background:none; border:0}
+  .logo svg{width:38px; height:38px}
+  /* To use YOUR OWN logo image: replace the <svg> in the .logo button with:
+     <img src="logo.png" alt="The Better Daily Life" style="height:36px"> */
+  .logo .wm{font-family:"Bricolage Grotesque"; font-weight:700; color:var(--ink); font-size:20px; letter-spacing:-.03em; line-height:1}
+  .logo .wm small{display:block; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-top:2px}
+  .navlinks{display:flex; gap:4px; margin-left:auto; align-items:center}
+  .navlinks button.link{background:none; border:0; cursor:pointer; font-family:"Inter"; font-weight:600; font-size:15.5px;
+    color:var(--ink2); padding:9px 14px; border-radius:999px; transition:.15s}
+  .navlinks button.link:hover{background:rgba(21,23,28,.06)}
+  .navlinks button.link.active{color:var(--coral-d)}
+  .navlinks .btn{margin-left:8px; padding:11px 20px; font-size:15px}
+  .burger{display:none; margin-left:auto; background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 12px; font-size:20px; cursor:pointer}
+
+  /* ---------- page system ---------- */
+  main{position:relative; z-index:1}
+  .page{display:none; animation:fade .4s ease}
+  .page.active{display:block}
+  @keyframes fade{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+  section.block{padding:84px 0}
+  section.block.tight{padding:56px 0}
+
+  /* reveal on scroll */
+  .reveal{opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1; transform:none}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative; background:radial-gradient(1100px 620px at 78% -8%, #3a2230 0%, rgba(58,34,48,0) 60%), linear-gradient(180deg,#191b21 0%, #15171c 70%);
+    color:#fff; overflow:hidden; padding:96px 0 110px}
+  .hero .sun-glow{position:absolute; width:520px; height:520px; right:-90px; top:-150px; background:radial-gradient(circle, rgba(255,140,70,.55), rgba(255,140,70,0) 62%); filter:blur(8px)}
+  .hero .grain{position:absolute; inset:0; opacity:.04; background-image:radial-gradient(#fff 1px, transparent 1px); background-size:4px 4px}
+  .hero-grid{position:relative; display:grid; grid-template-columns:1.05fr .95fr; gap:54px; align-items:center}
+  .hero h1{font-size:clamp(40px,6.4vw,74px); font-weight:800; color:#fff; letter-spacing:-.035em}
+  .hero h1 .grad{background:var(--sun); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .hero .sub{font-size:clamp(18px,2.2vw,21px); color:#c7c2d2; max-width:30em; margin:18px 0 30px}
+  .hero .cta-row{display:flex; gap:13px; flex-wrap:wrap}
+  .hero .trust{display:flex; gap:22px; margin-top:34px; flex-wrap:wrap; color:#8a8597; font-size:14px; font-weight:500}
+  .hero .trust b{color:#fff}
+
+  /* signature: 1% better interactive */
+  .compound-card{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:26px; padding:26px; backdrop-filter:blur(6px)}
+  .compound-card .ch{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
+  .compound-card .ch .ttl{font-family:"Bricolage Grotesque"; font-weight:600; color:#fff; font-size:17px}
+  .compound-card .ch .pct{color:var(--gold); font-family:"Bricolage Grotesque"; font-weight:700; font-variant-numeric:tabular-nums}
+  .bignum{font-family:"Bricolage Grotesque"; font-weight:800; letter-spacing:-.04em; line-height:.9;
+    font-size:clamp(58px,9vw,104px); background:var(--sun); -webkit-background-clip:text; background-clip:text; color:transparent; font-variant-numeric:tabular-nums}
+  .bignum-cap{color:#b9b4c6; font-size:15px; margin-top:2px}
+  .spark{margin-top:14px}
+  .cc-slider{margin-top:20px}
+  .cc-slider label{display:flex; justify-content:space-between; color:#cfcad9; font-size:13px; font-weight:600; margin-bottom:8px; font-family:"Bricolage Grotesque"}
+  input[type=range]{width:100%; -webkit-appearance:none; appearance:none; height:6px; border-radius:999px; cursor:pointer;
+    background:linear-gradient(var(--coral),var(--coral)) no-repeat, rgba(255,255,255,.16); background-size:50% 100%}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.4); border:5px solid var(--coral); cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:50%; background:#fff; border:5px solid var(--coral); cursor:pointer}
+
+  /* ---------- pillars ---------- */
+  .sec-head{max-width:640px; margin-bottom:46px}
+  .sec-head.center{margin-left:auto; margin-right:auto; text-align:center}
+  .sec-head h2{font-size:clamp(30px,4.4vw,46px); font-weight:800}
+  .sec-head p{font-size:19px; color:var(--body)}
+  .pillars{display:grid; grid-template-columns:repeat(3,1fr); gap:20px}
+  .pillar{position:relative; background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:30px; cursor:pointer;
+    transition:transform .2s, box-shadow .2s; overflow:hidden}
+  .pillar:hover{transform:translateY(-6px); box-shadow:var(--shadow)}
+  .pillar .tag{position:absolute; top:0; left:0; right:0; height:5px}
+  .pillar.pod .tag{background:var(--teal)} .pillar.news .tag{background:var(--plum)} .pillar.fin .tag{background:var(--green)}
+  .pillar .ic{width:52px; height:52px; border-radius:14px; display:grid; place-items:center; font-size:26px; margin-bottom:16px}
+  .pillar.pod .ic{background:rgba(14,154,167,.12)} .pillar.news .ic{background:rgba(123,97,255,.12)} .pillar.fin .ic{background:rgba(31,164,106,.12)}
+  .pillar h3{font-size:23px}
+  .pillar .go{margin-top:14px; font-family:"Bricolage Grotesque"; font-weight:600; font-size:15px; display:inline-flex; align-items:center; gap:6px}
+  .pillar.pod .go{color:var(--teal)} .pillar.news .go{color:var(--plum)} .pillar.fin .go{color:var(--green-d)}
+  .pillar:hover .go .ar{transform:translateX(4px)}
+  .ar{transition:transform .15s}
+
+  /* ---------- generic light cards / value row ---------- */
+  .vrow{display:grid; grid-template-columns:repeat(3,1fr); gap:30px; margin-top:10px}
+  .vrow .v h4{font-size:20px; display:flex; align-items:center; gap:9px}
+  .vrow .v p{font-size:15.5px; color:var(--body); margin:0}
+  .chip{font-size:22px}
+
+  .band{background:var(--ink); color:#fff; border-radius:32px; padding:54px; text-align:center; position:relative; overflow:hidden}
+  .band .sun-glow{position:absolute; width:380px; height:380px; left:-100px; bottom:-160px; background:radial-gradient(circle, rgba(255,120,60,.4), transparent 60%)}
+  .band h2{color:#fff; font-size:clamp(28px,4vw,42px)}
+  .band p{color:#c7c2d2; max-width:44em; margin:0 auto 26px}
+
+  /* ---------- podcast page ---------- */
+  .embed-box{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:26px; box-shadow:var(--shadow-sm)}
+  .placeholder{border:2px dashed #d9d0c2; border-radius:var(--r-sm); padding:34px; text-align:center; color:var(--muted); background:var(--paper2)}
+  .placeholder code{background:#fff; padding:2px 7px; border-radius:6px; border:1px solid var(--line); color:var(--ink2); font-size:13px}
+  .listen-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:20px}
+  .listen{display:inline-flex; align-items:center; gap:9px; background:#fff; border:1px solid var(--line); border-radius:999px; padding:11px 18px; font-weight:600; color:var(--ink2); font-size:15px}
+  .listen:hover{border-color:var(--ink); text-decoration:none; transform:translateY(-2px); transition:.15s}
+
+  /* ---------- newsletter page ---------- */
+  .news-hero{background:linear-gradient(135deg,#efe9ff,#fff); border:1px solid #e4dcff}
+  .perk{display:flex; gap:13px; align-items:flex-start; margin-bottom:16px}
+  .perk .pk{flex:0 0 auto; width:34px; height:34px; border-radius:10px; background:rgba(123,97,255,.14); display:grid; place-items:center; font-size:17px}
+  .perk b{color:var(--ink); font-family:"Bricolage Grotesque"; font-weight:600}
+
+  /* ---------- FINANCIAL EDUCATION ---------- */
+  .fin-head{background:linear-gradient(140deg,#0f1f17, #15171c); color:#fff; border-radius:0; padding:70px 0 64px; position:relative; overflow:hidden}
+  .fin-head .glow{position:absolute; width:460px; height:460px; right:-100px; top:-130px; background:radial-gradient(circle, rgba(31,164,106,.45), transparent 62%)}
+  .fin-head h1{color:#fff; font-size:clamp(34px,5vw,56px); font-weight:800}
+  .fin-head p{color:#bfead4; max-width:34em; font-size:19px}
+  .fin-head .eyebrow{color:#7ff0b6} .fin-head .eyebrow:before{background:var(--green)}
+
+  /* gate */
+  .gate{max-width:520px; margin:-40px auto 0; position:relative; z-index:2}
+  .gate-card{background:#fff; border-radius:26px; box-shadow:var(--shadow); padding:38px; text-align:center; border:1px solid var(--line)}
+  .gate-card .lock{width:62px; height:62px; border-radius:18px; background:rgba(31,164,106,.12); display:grid; place-items:center; font-size:30px; margin:0 auto 16px}
+  .gate-card h2{font-size:27px}
+  .gate-card p{color:var(--body); font-size:16px}
+  .gbtn-wrap{margin:22px 0 6px; display:flex; justify-content:center; min-height:44px}
+  /* fallback Google-styled button if GIS not configured yet */
+  .g-fallback{display:inline-flex; align-items:center; gap:11px; background:#fff; border:1px solid #dadce0; border-radius:8px; padding:11px 20px; font-family:"Inter"; font-weight:600; color:#3c4043; cursor:pointer; font-size:15px}
+  .g-fallback:hover{box-shadow:0 1px 3px rgba(60,64,67,.3)}
+  .g-fallback svg{width:18px;height:18px}
+  .consent{display:flex; gap:10px; align-items:flex-start; text-align:left; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-top:14px}
+  .consent input{margin-top:3px; width:18px; height:18px; accent-color:var(--green); cursor:pointer}
+  .consent label{font-size:14px; color:var(--body); cursor:pointer}
+  .gate-fine{font-size:12.5px; color:var(--muted); margin-top:14px}
+  .preview-link{display:inline-block; margin-top:8px; font-size:14px; color:var(--muted); cursor:pointer; text-decoration:underline}
+
+  .signed-bar{display:none; align-items:center; gap:12px; justify-content:center; background:rgba(31,164,106,.10); color:var(--green-d);
+    border:1px solid rgba(31,164,106,.3); border-radius:999px; padding:8px 16px; font-size:14px; font-weight:600; width:fit-content; margin:0 auto}
+  .signed-bar.show{display:flex}
+
+  /* hub */
+  #feHub{display:none}
+  .fin-tabs{display:flex; gap:7px; flex-wrap:wrap; justify-content:center; margin:0 0 34px}
+  .fin-tabs button{background:#fff; border:1px solid var(--line); border-radius:999px; padding:10px 18px; font-family:"Bricolage Grotesque"; font-weight:600; font-size:15px; color:var(--ink2); cursor:pointer; transition:.15s}
+  .fin-tabs button:hover{border-color:var(--green)}
+  .fin-tabs button.on{background:var(--green); color:#fff; border-color:var(--green)}
+  .ftool{display:none} .ftool.on{display:block; animation:fade .35s}
+
+  .tool{display:grid; grid-template-columns:330px 1fr; gap:24px; align-items:start}
+  .panel-card{background:#fff; border:1px solid var(--line); border-radius:var(--r); padding:22px; box-shadow:var(--shadow-sm)}
+  .ctrl{margin-bottom:18px}
+  .ctrl label{display:flex; justify-content:space-between; align-items:baseline; font-family:"Bricolage Grotesque"; font-weight:600; color:var(--ink); margin-bottom:8px; font-size:15px}
+  .ctrl label .val{color:var(--green-d); font-weight:700; font-variant-numeric:tabular-nums}
+  .ctrl .lite{background:linear-gradient(var(--green),var(--green)) no-repeat, var(--paper2); background-size:50% 100%}
+  .ctrl .lite::-webkit-slider-thumb{border-color:var(--green)} .ctrl .lite::-moz-range-thumb{border-color:var(--green)}
+  .seg{display:flex; gap:8px}
+  .seg button{flex:1; background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:11px 8px; font-family:"Bricolage Grotesque"; font-weight:600; color:var(--ink2); cursor:pointer; transition:.15s; font-size:15px}
+  .seg button .sub{display:block; font-size:11.5px; color:var(--muted); font-weight:500; font-family:"Inter"}
+  .seg button.on{border-color:var(--green); background:rgba(31,164,106,.08); color:var(--green-d)}
+  .switch{display:flex; gap:11px; align-items:center; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:18px}
+  .switch input{width:20px; height:20px; accent-color:var(--green)}
+  .switch b{color:var(--ink); font-family:"Bricolage Grotesque"; font-weight:600; font-size:14.5px}
+  .switch span{display:block; font-size:12.5px; color:var(--muted)}
+
+  .res-banner{background:linear-gradient(135deg,#15171c,#23332a); color:#fff; border-radius:var(--r); padding:22px 26px; display:flex; flex-wrap:wrap; gap:18px 34px; align-items:center; box-shadow:var(--shadow-sm)}
+  .res .rl{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#9fd9bd; font-family:"Bricolage Grotesque"; font-weight:600}
+  .res .rn{font-family:"Bricolage Grotesque"; font-weight:800; font-size:clamp(28px,4.5vw,42px); line-height:1; font-variant-numeric:tabular-nums}
+  .res .rn.g{color:#74f0ab} .res .rn.y{color:var(--gold)}
+  .res .rs{font-size:13px; color:#bfe7d3}
+  .chart-card{background:#fff; border:1px solid var(--line); border-radius:var(--r); padding:20px 22px; margin-top:18px; box-shadow:var(--shadow-sm)}
+  .chart-card h4{font-family:"Bricolage Grotesque"; font-weight:600; color:var(--ink); font-size:18px; margin:0 0 4px}
+  .chart-wrap{position:relative; height:320px}
+  .legend{display:flex; gap:18px; flex-wrap:wrap; font-size:14px; margin-top:10px; color:var(--body)}
+  .legend span{display:flex; align-items:center; gap:6px}
+  .dot{width:12px; height:12px; border-radius:4px; display:inline-block}
+  .note{font-size:14px; background:#fff7e6; border:1px solid #ffe3a3; color:#7a5a12; border-radius:12px; padding:12px 16px; margin-top:16px}
+  .note b{color:#6a4d0a}
+
+  details.lesson{background:#fff; border:1px solid var(--line); border-radius:var(--r-sm); padding:18px 20px; margin-bottom:0; cursor:pointer}
+  details.lesson summary{list-style:none; display:flex; align-items:center; gap:11px; font-family:"Bricolage Grotesque"; font-weight:600; font-size:18px; color:var(--ink)}
+  details.lesson summary::-webkit-details-marker{display:none}
+  details.lesson summary .chev{margin-left:auto; color:var(--green-d); transition:.2s}
+  details.lesson[open] summary .chev{transform:rotate(90deg)}
+  details.lesson .ans{margin-top:11px; font-size:15.5px; color:var(--body)}
+  .ans b{color:var(--ink)} .term{font-weight:700; color:var(--plum)}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+
+  /* quiz */
+  .quiz{max-width:660px; margin:0 auto}
+  .qbar{height:9px; background:var(--paper2); border-radius:999px; overflow:hidden; margin-bottom:8px}
+  .qbar i{display:block; height:100%; background:var(--green); width:0; transition:width .4s}
+  .qmeta{display:flex; justify-content:space-between; font-size:14px; color:var(--muted); margin-bottom:16px}
+  .qtext{font-family:"Bricolage Grotesque"; font-weight:600; font-size:22px; color:var(--ink); margin-bottom:16px}
+  .opt{display:block; width:100%; text-align:left; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:15px 18px; margin-bottom:10px; font-size:16.5px; font-weight:600; color:var(--ink2); cursor:pointer; transition:.12s}
+  .opt:hover:not(:disabled){border-color:var(--green); transform:translateX(3px)}
+  .opt.correct{border-color:var(--green); background:rgba(31,164,106,.1); color:var(--green-d)}
+  .opt.wrong{border-color:var(--coral); background:rgba(255,106,61,.08); color:var(--coral-d)}
+  .explain{background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:14px 16px; font-size:15px; margin-top:6px}
+  .qend{text-align:center}
+  .qend .score{font-family:"Bricolage Grotesque"; font-weight:800; font-size:64px; color:var(--green-d)}
+  .qbadge{display:inline-block; background:var(--gold); color:#5a3d00; font-family:"Bricolage Grotesque"; font-weight:600; padding:8px 18px; border-radius:999px; margin:10px 0 18px}
+
+  /* about */
+  .about-lead{font-size:clamp(22px,3vw,30px); font-family:"Bricolage Grotesque"; font-weight:600; color:var(--ink); line-height:1.25}
+
+  /* footer */
+  footer.site{background:var(--ink); color:#a8a3b3; padding:56px 0 30px; margin-top:30px}
+  footer.site .cols{display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:30px; margin-bottom:34px}
+  footer.site h5{font-family:"Bricolage Grotesque"; color:#fff; font-size:15px; letter-spacing:.04em; margin:0 0 14px; font-weight:600}
+  footer.site a, footer.site button.flink{display:block; color:#a8a3b3; background:none; border:0; padding:0; margin-bottom:9px; font-size:14.5px; cursor:pointer; text-align:left; font-family:"Inter"; font-weight:500}
+  footer.site a:hover, footer.site button.flink:hover{color:#fff; text-decoration:none}
+  footer.site .foot-logo .wm{color:#fff}
+  footer.site .disc{border-top:1px solid #2c2f37; padding-top:20px; font-size:12.5px; color:#736e80; line-height:1.6; max-width:62em}
+
+  /* modal */
+  .modal{position:fixed; inset:0; z-index:80; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(21,23,28,.55); backdrop-filter:blur(4px)}
+  .modal.show{display:flex}
+  .modal-card{background:#fff; border-radius:22px; max-width:440px; padding:30px; box-shadow:var(--shadow); text-align:center}
+  .modal-card h3{font-size:22px}
+  #confetti{position:fixed; inset:0; pointer-events:none; z-index:90}
+
+  @media (max-width:900px){
+    .hero-grid{grid-template-columns:1fr; gap:36px} .pillars{grid-template-columns:1fr} .vrow{grid-template-columns:1fr}
+    .tool{grid-template-columns:1fr} footer.site .cols{grid-template-columns:1fr 1fr}
+    .navlinks{display:none; position:absolute; top:68px; left:0; right:0; flex-direction:column; align-items:stretch; background:#fff; padding:12px 18px 18px; box-shadow:var(--shadow); border-bottom:1px solid var(--line)}
+    .navlinks.open{display:flex} .navlinks .btn{margin:8px 0 0} .burger{display:inline-block}
+  }
+  @media (max-width:560px){ body{font-size:16px} section.block{padding:60px 0} .band{padding:38px 22px} .grid2{grid-template-columns:1fr} footer.site .cols{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important; scroll-behavior:auto!important} .reveal{opacity:1; transform:none} }
+</style>
+</head>
+<body>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <button class="logo" onclick="go('home')" aria-label="The Better Daily Life — home">
+      <!-- SWAP FOR YOUR LOGO: replace this <svg> with <img src="logo.png" alt="The Better Daily Life" style="height:36px"> -->
+      <svg viewBox="0 0 44 44" aria-hidden="true">
+        <rect width="44" height="44" rx="11" fill="#15171c"/>
+        <path d="M8 30 C16 30 16 14 22 14 C28 14 28 22 36 22" stroke="url(#lg)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <circle cx="36" cy="22" r="3.6" fill="#FFC24B"/>
+        <defs><linearGradient id="lg" x1="8" y1="30" x2="36" y2="14"><stop stop-color="#FF6A3D"/><stop offset="1" stop-color="#FFC24B"/></linearGradient></defs>
+      </svg>
+      <span class="wm">The Better Daily Life<small>Continuous learning</small></span>
+    </button>
+    <button class="burger" id="burger" aria-label="Menu">☰</button>
+    <nav class="navlinks" id="navlinks" aria-label="Primary">
+      <button class="link active" data-p="home" onclick="go('home')">Home</button>
+      <button class="link" data-p="podcast" onclick="go('podcast')">Podcast</button>
+      <button class="link" data-p="newsletter" onclick="go('newsletter')">Newsletter</button>
+      <button class="link" data-p="finance" onclick="go('finance')">Financial Education</button>
+      <button class="link" data-p="about" onclick="go('about')">About</button>
+      <button class="btn btn-sun" onclick="go('newsletter')">Subscribe</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ================= HOME ================= -->
+<section class="page active" id="home">
+  <div class="hero">
+    <div class="sun-glow" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">An initiative for getting better</span>
+        <h1>Get <span class="grad">1% better</span><br>every single day.</h1>
+        <p class="sub">The Better Daily Life is about the quiet power of continuous learning — small, steady improvements that compound into something remarkable. A podcast, a newsletter, and free financial education for the next generation.</p>
+        <div class="cta-row">
+          <button class="btn btn-sun" onclick="go('newsletter')">Join the newsletter</button>
+          <button class="btn btn-ghost" onclick="go('podcast')">▸ Listen to the podcast</button>
+        </div>
+        <div class="trust">
+          <span><b>Free</b> financial education</span>
+          <span><b>Weekly</b> ideas worth keeping</span>
+          <span><b>No</b> spam, ever</span>
+        </div>
+      </div>
+
+      <!-- SIGNATURE: the 1% compounding demo -->
+      <div class="compound-card reveal">
+        <div class="ch">
+          <span class="ttl">The math of getting better</span>
+          <span class="pct" id="ccPct">+1.0% / day</span>
+        </div>
+        <div class="bignum" id="ccBig">37.8×</div>
+        <div class="bignum-cap" id="ccCap">better in one year of daily 1% gains</div>
+        <div class="spark"><canvas id="ccSpark" height="90"></canvas></div>
+        <div class="cc-slider">
+          <label>How much better each day? <span id="ccVal" style="color:var(--gold)">1.0%</span></label>
+          <input type="range" id="ccRange" min="0.1" max="2" step="0.1" value="1">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sec-head center reveal">
+        <span class="eyebrow" style="justify-content:center">Three ways in</span>
+        <h2>Learn a little, every day</h2>
+        <p>Pick the format that fits your life. They all point the same direction: forward.</p>
+      </div>
+      <div class="pillars">
+        <div class="pillar pod reveal" onclick="go('podcast')">
+          <span class="tag"></span>
+          <div class="ic">🎙️</div>
+          <h3>The Podcast</h3>
+          <p>Honest conversations about habits, money, health, and the craft of getting better — in your ears on the commute, the walk, the dishes.</p>
+          <span class="go">Listen now <span class="ar">→</span></span>
+        </div>
+        <div class="pillar news reveal" onclick="go('newsletter')">
+          <span class="tag"></span>
+          <div class="ic">✉️</div>
+          <h3>The Newsletter</h3>
+          <p>One short, useful email. A clear idea, something to try this week, and a nudge to keep going. Read in two minutes, keep for life.</p>
+          <span class="go">Subscribe free <span class="ar">→</span></span>
+        </div>
+        <div class="pillar fin reveal" onclick="go('finance')">
+          <span class="tag"></span>
+          <div class="ic">🌱</div>
+          <h3>Financial Education</h3>
+          <p>Free, hands-on money tools for kids and teens. Play with compound interest and investing using virtual money — sign in to unlock.</p>
+          <span class="go">Open the hub <span class="ar">→</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block tight">
+    <div class="wrap">
+      <div class="band reveal">
+        <div class="sun-glow" aria-hidden="true"></div>
+        <h2 style="position:relative">Why "1% better"?</h2>
+        <p style="position:relative">Because progress isn't about giant leaps — it's about showing up. Improve by just 1% a day and the gains <b style="color:#fff">stack on top of each other</b>, exactly like compound interest on money. A year later you're not 365% better. You're nearly <b style="color:var(--gold)">38 times</b> better. That's the whole idea behind everything here.</p>
+        <button class="btn btn-sun" style="position:relative" onclick="go('finance')">See it with money →</button>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ================= PODCAST ================= -->
+<section class="page" id="podcast">
+  <section class="block">
+    <div class="wrap narrow">
+      <div class="sec-head reveal">
+        <span class="eyebrow">The Podcast</span>
+        <h2>Conversations about getting better</h2>
+        <p>New episodes on continuous learning, money, habits, and health. Press play below, or follow wherever you listen.</p>
+      </div>
+
+      <div class="embed-box reveal">
+        <!-- ▼▼ PASTE YOUR BUZZSPROUT PLAYER HERE ▼▼
+             In Buzzsprout: your podcast → "Website" / "Embed" → copy the player code.
+             Delete the placeholder below and paste it in its place. It looks like:
+             <div id="buzzsprout-large-player"></div>
+             <script src="https://www.buzzsprout.com/XXXXXX.js?container_id=buzzsprout-large-player&player=large"><\/script>
+        -->
+        <div class="placeholder" id="podPlaceholder">
+          🎙️ <b>Your Buzzsprout player goes here.</b><br>
+          In Buzzsprout, open your podcast → <code>Website</code> or <code>Embed</code> → copy the player code, then paste it here in <code>index.html</code> (search for "PASTE YOUR BUZZSPROUT PLAYER").
+        </div>
+        <!-- ▲▲ END Buzzsprout area ▲▲ -->
+
+        <div class="listen-row">
+          <!-- Replace the # links with your real show URLs -->
+          <a class="listen" href="#" target="_blank" rel="noopener">▸ Buzzsprout</a>
+          <a class="listen" href="#" target="_blank" rel="noopener">🎧 Apple Podcasts</a>
+          <a class="listen" href="#" target="_blank" rel="noopener">🟢 Spotify</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ================= NEWSLETTER ================= -->
+<section class="page" id="newsletter">
+  <section class="block">
+    <div class="wrap">
+      <div class="tool" style="grid-template-columns:1fr 1fr; gap:40px; align-items:center">
+        <div class="reveal">
+          <span class="eyebrow">The Newsletter</span>
+          <h2 style="font-size:clamp(30px,4.4vw,46px)">Two minutes that move you forward</h2>
+          <p style="font-size:19px">Join the email list for a weekly dose of practical ideas on learning, money, and momentum. No fluff, no spam — unsubscribe in one click whenever you like.</p>
+          <div style="margin-top:24px">
+            <div class="perk"><span class="pk">💡</span><span><b>One clear idea</b> you can actually use this week.</span></div>
+            <div class="perk"><span class="pk">🌱</span><span><b>Money lessons</b> made simple for the whole family.</span></div>
+            <div class="perk"><span class="pk">⏱️</span><span><b>Two-minute reads</b> — respectful of your time.</span></div>
+          </div>
+        </div>
+        <div class="embed-box news-hero reveal">
+          <h3 style="font-size:24px">Subscribe free</h3>
+          <p style="font-size:15px; color:var(--body)">Join readers getting a little better every week.</p>
+          <!-- ▼▼ PASTE YOUR BEEHIIV EMBED HERE ▼▼
+               In Beehiiv: Settings → Publication → Embed / "Subscribe forms" → copy the iframe.
+               Replace the placeholder below. It looks like:
+               <iframe src="https://embeds.beehiiv.com/XXXXXXXX" style="width:100%;height:80px;border:0" frameborder="0" scrolling="no"></iframe>
+          -->
+          <div class="placeholder" style="margin-top:14px">
+            ✉️ <b>Your Beehiiv signup form goes here.</b><br>
+            In Beehiiv → <code>Subscribe Forms</code> → copy the embed, paste it here (search "PASTE YOUR BEEHIIV EMBED").
+          </div>
+          <!-- ▲▲ END Beehiiv area ▲▲ -->
+          <a class="btn btn-light" style="margin-top:16px; width:100%; justify-content:center" href="https://thebetterdaily.beehiiv.com" target="_blank" rel="noopener">Open the newsletter on Beehiiv →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ================= FINANCIAL EDUCATION ================= -->
+<section class="page" id="finance">
+  <div class="fin-head">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="wrap">
+      <span class="eyebrow">Financial Education · free</span>
+      <h1>Money skills that compound.</h1>
+      <p>A hands-on hub for kids and teens to learn how money grows — compound interest, dollar-cost averaging, and more, all with virtual money. Sign in once to unlock it.</p>
+    </div>
+  </div>
+
+  <section class="block" style="padding-top:0">
+    <!-- GATE -->
+    <div class="gate" id="feGate">
+      <div class="gate-card">
+        <div class="lock">🌱</div>
+        <h2>Unlock the hub</h2>
+        <p>Sign in with Google to open the financial education tools. It's free, and it keeps your progress yours.</p>
+        <div class="gbtn-wrap" id="googleBtn"></div>
+        <div class="consent">
+          <input type="checkbox" id="newsOptIn" checked>
+          <label for="newsOptIn">Email me <b>The Better Daily</b> newsletter — simple money &amp; learning ideas each week. Unsubscribe anytime.</label>
+        </div>
+        <div class="gate-fine">We only use your email to sign you in and (if checked) send the newsletter. No passwords to remember.</div>
+        <span class="preview-link" id="previewLink" onclick="unlockHub(true)">Just exploring? Preview the hub without signing in →</span>
+      </div>
+    </div>
+
+    <!-- HUB -->
+    <div class="wrap" id="feHub">
+      <div class="signed-bar" id="signedBar">✓ <span id="signedTxt">You're in</span> · <span style="cursor:pointer;text-decoration:underline" onclick="signOut()">sign out</span></div>
+      <div class="fin-tabs" style="margin-top:22px">
+        <button class="on" data-f="compound" onclick="finTab('compound')">✨ Compound</button>
+        <button data-f="dca" onclick="finTab('dca')">🌱 Invest Monthly</button>
+        <button data-f="versus" onclick="finTab('versus')">⚖️ Lump vs Steady</button>
+        <button data-f="learn" onclick="finTab('learn')">📚 Learn</button>
+        <button data-f="quiz" onclick="finTab('quiz')">🎮 Quiz</button>
+      </div>
+
+      <!-- COMPOUND -->
+      <div class="ftool on" id="ft-compound">
+        <div class="sec-head center" style="margin-bottom:26px"><h2 style="font-size:30px">The Magic Calculator ✨</h2><p>Compound interest means you earn money on your money — and on the money it already earned.</p></div>
+        <div class="tool">
+          <div class="panel-card">
+            <div class="ctrl"><label>Starting amount <span class="val" id="cStartV">$100</span></label><input class="lite" type="range" id="cStart" min="0" max="5000" step="50" value="100"></div>
+            <div class="ctrl"><label>Added every month <span class="val" id="cMonthV">$25</span></label><input class="lite" type="range" id="cMonth" min="0" max="500" step="5" value="25"></div>
+            <div class="ctrl"><label>Years of growing <span class="val" id="cYearsV">20</span></label><input class="lite" type="range" id="cYears" min="1" max="60" step="1" value="20"></div>
+            <div class="ctrl"><label>Growth rate each year <span class="val" id="cRateV">8%</span></label><input class="lite" type="range" id="cRate" min="0" max="15" step="0.5" value="8"></div>
+            <div class="note">💡 A typical long-term stock-market average is around <b>7–10% a year</b> — but some years are up, some are down.</div>
+          </div>
+          <div>
+            <div class="res-banner res">
+              <div><div class="rl">Could grow to</div><div class="rn g" id="cTotal">$0</div></div>
+              <div><div class="rl">You put in</div><div class="rn" id="cInvested">$0</div></div>
+              <div><div class="rl">Growth</div><div class="rn y" id="cGrowth">$0</div></div>
+            </div>
+            <div class="chart-card"><h4>Your money over time</h4><div class="chart-wrap"><canvas id="cChart"></canvas></div>
+              <div class="legend"><span><i class="dot" style="background:#cfd8d2"></i> What you put in</span><span><i class="dot" style="background:var(--green)"></i> What it grows to</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DCA -->
+      <div class="ftool" id="ft-dca">
+        <div class="sec-head center" style="margin-bottom:26px"><h2 style="font-size:30px">Invest Monthly 🌱</h2><p>This is <span class="term">dollar-cost averaging</span>: invest the same amount every month with virtual money.</p></div>
+        <div class="tool">
+          <div class="panel-card">
+            <div class="ctrl"><label style="margin-bottom:9px">Pick a fund</label>
+              <div class="seg" id="dFund">
+                <button class="on" data-rate="10" data-vol="15" data-name="VOO">VOO<span class="sub">S&amp;P 500 · ~10%/yr*</span></button>
+                <button data-rate="13" data-vol="20" data-name="QQQ">QQQ<span class="sub">Nasdaq-100 · ~13%/yr*</span></button>
+              </div>
+            </div>
+            <div class="ctrl"><label>Invest every month <span class="val" id="dMonthV">$50</span></label><input class="lite" type="range" id="dMonth" min="5" max="500" step="5" value="50"></div>
+            <div class="ctrl"><label>For how many years <span class="val" id="dYearsV">15</span></label><input class="lite" type="range" id="dYears" min="1" max="50" step="1" value="15"></div>
+            <div class="switch"><input type="checkbox" id="dVol"><span><b>Show real market ups &amp; downs</b><span>Markets aren't a straight line — try it!</span></span></div>
+            <button class="btn btn-green" id="dPlay" style="width:100%; justify-content:center">▶ Watch it grow</button>
+          </div>
+          <div>
+            <div class="res-banner res">
+              <div><div class="rl">Portfolio value</div><div class="rn g" id="dValue">$0</div><div class="rs" id="dValueSub"></div></div>
+              <div><div class="rl">You invested</div><div class="rn" id="dInvested">$0</div></div>
+              <div><div class="rl">Total growth</div><div class="rn y" id="dGrowth">$0</div></div>
+            </div>
+            <div class="chart-card"><h4>Your virtual portfolio</h4><div class="chart-wrap"><canvas id="dChart"></canvas></div>
+              <div class="legend"><span><i class="dot" style="background:#cfd8d2"></i> Money you invested</span><span><i class="dot" style="background:var(--green)"></i> Portfolio value</span></div></div>
+            <div class="note">🎮 A learning simulation with <b>virtual money</b>. Real funds like VOO and QQQ go up <i>and</i> down and can lose value. Education, not advice.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VERSUS -->
+      <div class="ftool" id="ft-versus">
+        <div class="sec-head center" style="margin-bottom:26px"><h2 style="font-size:30px">Lump Sum vs Steady ⚖️</h2><p>Got a chunk of money? Invest it all at once, or spread it out? Let's race them.</p></div>
+        <div class="tool">
+          <div class="panel-card">
+            <div class="ctrl"><label>Total money to invest <span class="val" id="vPotV">$1,200</span></label><input class="lite" type="range" id="vPot" min="100" max="20000" step="100" value="1200"></div>
+            <div class="ctrl"><label>Spread "steady" over <span class="val" id="vSpreadV">12 months</span></label><input class="lite" type="range" id="vSpread" min="2" max="60" step="1" value="12"></div>
+            <div class="ctrl"><label>Then let it grow for <span class="val" id="vGrowV">20 years</span></label><input class="lite" type="range" id="vGrow" min="1" max="50" step="1" value="20"></div>
+            <div class="ctrl"><label>Growth rate each year <span class="val" id="vRateV">9%</span></label><input class="lite" type="range" id="vRate" min="0" max="15" step="0.5" value="9"></div>
+            <div class="note">Both invest the <b>same total</b>. The difference is <i>timing</i>.</div>
+          </div>
+          <div>
+            <div class="grid2">
+              <div class="res-banner res" style="background:linear-gradient(135deg,#15171c,#16864f)"><div><div class="rl">💰 Lump sum</div><div class="rn g" id="vLump">$0</div><div class="rs">More time invested</div></div></div>
+              <div class="res-banner res" style="background:linear-gradient(135deg,#15171c,#5a45c8)"><div><div class="rl">🪜 Steady</div><div class="rn" style="color:#cdbfff" id="vSteady">$0</div><div class="rs">Lower early risk</div></div></div>
+            </div>
+            <div class="chart-card"><h4>The race over time</h4><div class="chart-wrap"><canvas id="vChart"></canvas></div>
+              <div class="legend"><span><i class="dot" style="background:var(--green)"></i> Lump sum</span><span><i class="dot" style="background:var(--plum)"></i> Steady</span></div></div>
+            <div class="note" id="vTake"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEARN -->
+      <div class="ftool" id="ft-learn">
+        <div class="sec-head center" style="margin-bottom:26px"><h2 style="font-size:30px">Money lessons in plain English 📚</h2><p>Tap any card to open it.</p></div>
+        <div class="grid2" id="lessonGrid"></div>
+        <div class="sec-head center" style="margin:42px auto 24px"><h2 style="font-size:26px">Money word glossary</h2></div>
+        <div class="grid2" id="glossaryGrid"></div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="ftool" id="ft-quiz">
+        <div class="sec-head center" style="margin-bottom:26px"><h2 style="font-size:30px">Money Quiz 🎮</h2></div>
+        <div class="panel-card quiz" id="quizCard"></div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section class="page" id="about">
+  <section class="block">
+    <div class="wrap narrow">
+      <div class="sec-head reveal"><span class="eyebrow">About</span><h2>The whole idea, in one breath</h2></div>
+      <p class="about-lead reveal">We believe the best life isn't built in a single dramatic move. It's built the way money grows — quietly, daily, and with patience. A little learning, repeated, becomes a lot.</p>
+      <p class="reveal" style="margin-top:22px">The Better Daily Life is an initiative to make continuous learning approachable for everyone. Through the podcast, we share honest conversations. Through the newsletter, we send small ideas worth keeping. And through free <button class="link" style="background:none;border:0;color:var(--green-d);font-weight:700;cursor:pointer;padding:0;font-size:inherit" onclick="go('finance')">financial education</button>, we give the next generation tools to understand money early — when time is most on their side.</p>
+      <p class="reveal">No gimmicks. No hype. Just a steady invitation to get 1% better, today and tomorrow and the day after that.</p>
+      <div class="band reveal" style="margin-top:36px; text-align:left">
+        <div class="sun-glow" aria-hidden="true"></div>
+        <h2 style="position:relative; font-size:28px">Start where you are</h2>
+        <p style="position:relative">Pick one thing today. Listen to an episode, read one email, or open the money hub with a child in your life. Small is the point.</p>
+        <div style="position:relative; display:flex; gap:12px; flex-wrap:wrap">
+          <button class="btn btn-sun" onclick="go('newsletter')">Join the newsletter</button>
+          <button class="btn btn-ghost" onclick="go('finance')">Open Financial Education</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <div class="logo foot-logo" style="margin-bottom:12px">
+          <svg viewBox="0 0 44 44" width="36" height="36" aria-hidden="true"><rect width="44" height="44" rx="11" fill="#23262e"/><path d="M8 30 C16 30 16 14 22 14 C28 14 28 22 36 22" stroke="url(#lg2)" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="36" cy="22" r="3.6" fill="#FFC24B"/><defs><linearGradient id="lg2" x1="8" y1="30" x2="36" y2="14"><stop stop-color="#FF6A3D"/><stop offset="1" stop-color="#FFC24B"/></linearGradient></defs></svg>
+          <span class="wm">The Better Daily Life</span>
+        </div>
+        <p style="font-size:14px; color:#8a8597; max-width:24em">Get 1% better every day, through continuous learning.</p>
+      </div>
+      <div>
+        <h5>Explore</h5>
+        <button class="flink" onclick="go('podcast')">Podcast</button>
+        <button class="flink" onclick="go('newsletter')">Newsletter</button>
+        <button class="flink" onclick="go('finance')">Financial Education</button>
+        <button class="flink" onclick="go('about')">About</button>
+      </div>
+      <div>
+        <h5>Connect</h5>
+        <a href="https://thebetterdaily.beehiiv.com" target="_blank" rel="noopener">Newsletter on Beehiiv</a>
+        <a href="#" target="_blank" rel="noopener">Podcast on Buzzsprout</a>
+      </div>
+    </div>
+    <p class="disc">All figures in the Financial Education hub are <b>educational estimates using virtual money</b> and assume steady average returns to show how compounding works. Real investments such as VOO and QQQ rise and fall, can lose value, and past performance does not predict future results. This site is for learning only and is <b>not financial advice</b>. © <span id="yr"></span> The Better Daily Life.</p>
+  </div>
+</footer>
+
+<!-- modal -->
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card">
+    <h3 id="modalTitle"></h3>
+    <p id="modalBody" style="color:var(--body)"></p>
+    <button class="btn btn-green" onclick="closeModal()">Got it</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — the only thing you edit in this file for sign-in.
+   Paste your Google OAuth Client ID here (it is NOT secret).
+   Get it from Google Cloud Console (see the setup guide).
+   ============================================================ */
+const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+/* Your serverless endpoint that subscribes people to Beehiiv.
+   Leave as "/subscribe" — it maps to functions/subscribe.js on Cloudflare Pages. */
+const SUBSCRIBE_ENDPOINT = "/subscribe";
+/* ============================================================ */
+
+const $ = s => document.querySelector(s);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const usd0 = n => '$' + Math.round(n).toLocaleString('en-US');
+$('#yr').textContent = new Date().getFullYear();
+
+/* ---------- page nav ---------- */
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id===id));
+  document.querySelectorAll('.navlinks .link').forEach(b=>b.classList.toggle('active', b.dataset.p===id));
+  $('#navlinks').classList.remove('open');
+  window.scrollTo({top:0, behavior:reduceMotion?'auto':'smooth'});
+  runReveals();
+  if(id==='finance' && hubUnlocked){ initFinanceOnce(); }
+}
+$('#burger').addEventListener('click',()=>$('#navlinks').classList.toggle('open'));
+addEventListener('scroll',()=>$('#nav').classList.toggle('scrolled', scrollY>8));
+
+/* ---------- scroll reveals ---------- */
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }),{threshold:.12});
+function runReveals(){ document.querySelectorAll('.page.active .reveal:not(.in)').forEach(el=>io.observe(el)); }
+
+/* ---------- modal ---------- */
+function openModal(t,b){ $('#modalTitle').textContent=t; $('#modalBody').innerHTML=b; $('#modal').classList.add('show'); }
+function closeModal(){ $('#modal').classList.remove('show'); }
+
+/* ============================================================
+   1% BETTER — the hero signature
+   ============================================================ */
+let ccSpark;
+function drawCC(){
+  const r = +$('#ccRange').value;
+  $('#ccVal').textContent = r.toFixed(1)+'%';
+  $('#ccPct').textContent = '+'+r.toFixed(1)+'% / day';
+  const factor = Math.pow(1+r/100, 365);
+  $('#ccBig').textContent = factor.toFixed(1)+'×';
+  $('#ccCap').textContent = `better after a year of daily ${r.toFixed(1)}% gains`;
+  // sparkline data
+  const pts=[]; for(let d=0; d<=365; d+=5){ pts.push({x:d, y:Math.pow(1+r/100,d)}); }
+  const data={datasets:[{data:pts, borderColor:'#FFC24B', borderWidth:3, pointRadius:0, tension:.25,
+    fill:true, backgroundColor:(ctx)=>{ const c=ctx.chart.ctx; const g=c.createLinearGradient(0,0,0,90); g.addColorStop(0,'rgba(255,106,61,.45)'); g.addColorStop(1,'rgba(255,106,61,0)'); return g; }}]};
+  const opts={responsive:true, maintainAspectRatio:false, animation:{duration:reduceMotion?0:500},
+    scales:{x:{type:'linear', display:false}, y:{display:false, beginAtZero:true}}, plugins:{legend:{display:false}, tooltip:{enabled:false}}};
+  if(ccSpark){ ccSpark.data=data; ccSpark.options=opts; ccSpark.update('none'); }
+  else ccSpark=new Chart($('#ccSpark'),{type:'line',data,options:opts});
+}
+$('#ccRange').addEventListener('input',()=>{ setFill($('#ccRange')); drawCC(); });
+
+/* ============================================================
+   FINANCE MATH (verified)
+   ============================================================ */
+function project(start, monthly, years, annualRate){
+  const months=Math.round(years*12), i=annualRate/100/12;
+  const invested=[], value=[], labels=[]; let bal=start;
+  for(let m=0;m<=months;m++){ if(m>0) bal=bal*(1+i)+monthly; invested.push(start+monthly*m); value.push(bal); labels.push(m/12); }
+  return {invested, value, labels, months};
+}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gaussFrom(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function projectVolatile(monthly, years, annualRate, annualVol, seed){
+  const months=Math.round(years*12), meanM=Math.pow(1+annualRate/100,1/12)-1, volM=(annualVol/100)/Math.sqrt(12);
+  const rng=mulberry(seed); const value=[], invested=[]; let bal=0;
+  for(let m=0;m<=months;m++){ if(m>0){ const r=meanM+volM*gaussFrom(rng); bal=bal*(1+r)+monthly; } value.push(Math.max(0,bal)); invested.push(monthly*m); }
+  return {value, invested, months};
+}
+
+/* chart helpers */
+function setFill(el){ const min=+el.min,max=+el.max,v=+el.value; el.style.backgroundSize=((v-min)/(max-min)*100)+'% 100%'; }
+function countTo(el,to){ if(reduceMotion){el.textContent=usd0(to);return;} const from=el._c||0,st=performance.now();
+  cancelAnimationFrame(el._r); const step=now=>{const t=Math.min(1,(now-st)/600),e=1-Math.pow(1-t,3),v=from+(to-from)*e; el.textContent=usd0(v); el._c=v; if(t<1)el._r=requestAnimationFrame(step); else {el.textContent=usd0(to);el._c=to;}}; el._r=requestAnimationFrame(step); }
+let financeReady=false;
+function baseOpts(){ return {responsive:true,maintainAspectRatio:false,animation:{duration:reduceMotion?0:700},
+  scales:{x:{type:'linear',title:{display:true,text:'Years',color:'#9aa5b1',font:{size:12}},grid:{display:false},ticks:{maxTicksLimit:8,callback:function(v){return Math.round(this.getLabelForValue(v));}}},
+  y:{beginAtZero:true,grid:{color:'#eef1f4'},ticks:{callback:v=>'$'+(v>=1000?(v/1000).toFixed(v>=10000?0:1)+'k':v)}}},
+  plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'Year '+Math.round(c[0].parsed.x),label:c=>c.dataset.label+': '+usd0(c.parsed.y)},padding:10,titleFont:{family:'Bricolage Grotesque'}}}}; }
+
+/* ----- compound ----- */
+let cChart;
+function drawCompound(){
+  const start=+$('#cStart').value,m=+$('#cMonth').value,y=+$('#cYears').value,r=+$('#cRate').value;
+  $('#cStartV').textContent=usd0(start);$('#cMonthV').textContent=usd0(m);$('#cYearsV').textContent=y;$('#cRateV').textContent=r+'%';
+  ['cStart','cMonth','cYears','cRate'].forEach(id=>setFill($('#'+id)));
+  const p=project(start,m,y,r),total=p.value.at(-1),inv=p.invested.at(-1);
+  countTo($('#cTotal'),total);countTo($('#cInvested'),inv);countTo($('#cGrowth'),Math.max(0,total-inv));
+  const data={datasets:[
+    {label:'What you put in',data:p.invested.map((v,i)=>({x:p.labels[i],y:v})),borderColor:'#cfd8d2',backgroundColor:'rgba(207,216,210,.25)',fill:true,pointRadius:0,borderWidth:2,tension:.25},
+    {label:'What it grows to',data:p.value.map((v,i)=>({x:p.labels[i],y:v})),borderColor:'#1fa46a',backgroundColor:'rgba(31,164,106,.14)',fill:true,pointRadius:0,borderWidth:3,tension:.25}]};
+  if(cChart){cChart.data=data;cChart.update();} else cChart=new Chart($('#cChart'),{type:'line',data,options:baseOpts()});
+}
+/* ----- dca ----- */
+let dChart,dTimer;
+function dcaP(){const b=$('#dFund .on');return {m:+$('#dMonth').value,y:+$('#dYears').value,rate:+b.dataset.rate,vol:+b.dataset.vol,name:b.dataset.name,volatile:$('#dVol').checked};}
+function drawDCA(){
+  const p=dcaP(); $('#dMonthV').textContent=usd0(p.m);$('#dYearsV').textContent=p.y; ['dMonth','dYears'].forEach(id=>setFill($('#'+id)));
+  const s=p.volatile?projectVolatile(p.m,p.y,p.rate,p.vol,12345):(()=>{const x=project(0,p.m,p.y,p.rate);return{value:x.value,invested:x.invested,months:x.months};})();
+  renderDCA(s,s.months); $('#dValueSub').textContent=p.name+(p.volatile?' · with ups & downs':' · steady average');
+}
+function renderDCA(s,upto){
+  const val=s.value.slice(0,upto+1),inv=s.invested.slice(0,upto+1),lab=val.map((_,m)=>m/12);
+  countTo($('#dValue'),val.at(-1));countTo($('#dInvested'),inv.at(-1));countTo($('#dGrowth'),Math.max(0,val.at(-1)-inv.at(-1)));
+  const data={datasets:[
+    {label:'Money you invested',data:inv.map((v,i)=>({x:lab[i],y:v})),borderColor:'#cfd8d2',backgroundColor:'rgba(207,216,210,.25)',fill:true,pointRadius:0,borderWidth:2,tension:.15},
+    {label:'Portfolio value',data:val.map((v,i)=>({x:lab[i],y:v})),borderColor:'#1fa46a',backgroundColor:'rgba(31,164,106,.14)',fill:true,pointRadius:0,borderWidth:3,tension:.15}]};
+  if(dChart){dChart.data=data;dChart.update('none');} else dChart=new Chart($('#dChart'),{type:'line',data,options:baseOpts()});
+}
+function playDCA(){
+  clearInterval(dTimer); const p=dcaP();
+  const s=p.volatile?projectVolatile(p.m,p.y,p.rate,p.vol,12345):(()=>{const x=project(0,p.m,p.y,p.rate);return{value:x.value,invested:x.invested,months:x.months};})();
+  if(reduceMotion){renderDCA(s,s.months);return;}
+  let m=0;const tot=s.months,step=Math.max(1,Math.round(tot/60));$('#dPlay').textContent='⏸ Growing...';
+  dTimer=setInterval(()=>{m+=step;if(m>=tot){m=tot;clearInterval(dTimer);$('#dPlay').textContent='▶ Watch it grow';confettiBurst();}renderDCA(s,m);},45);
+}
+/* ----- versus ----- */
+let vChart;
+function drawVersus(){
+  const pot=+$('#vPot').value,sp=+$('#vSpread').value,g=+$('#vGrow').value,r=+$('#vRate').value;
+  $('#vPotV').textContent=usd0(pot);$('#vSpreadV').textContent=sp+' months';$('#vGrowV').textContent=g+' years';$('#vRateV').textContent=r+'%';
+  ['vPot','vSpread','vGrow','vRate'].forEach(id=>setFill($('#'+id)));
+  const tot=Math.round(g*12),i=r/100/12,per=pot/sp,lump=[],steady=[],lab=[]; let lb=pot,sb=0;
+  for(let m=0;m<=tot;m++){ if(m>0){lb*=(1+i); sb=sb*(1+i)+(m<=sp?per:0);} lump.push(lb);steady.push(sb);lab.push(m/12); }
+  countTo($('#vLump'),lump.at(-1));countTo($('#vSteady'),steady.at(-1));
+  const diff=lump.at(-1)-steady.at(-1);
+  $('#vTake').innerHTML='🏁 Investing it <b>all at once</b> ends about <b>'+usd0(Math.abs(diff))+'</b> ahead here — that money had more time to grow. But <b>steady</b> investing is safer if prices fall right after you start, and it\'s what most people actually do. Both beat not investing at all!';
+  const data={datasets:[
+    {label:'Lump sum',data:lump.map((v,i)=>({x:lab[i],y:v})),borderColor:'#1fa46a',backgroundColor:'rgba(31,164,106,.10)',fill:true,pointRadius:0,borderWidth:3,tension:.2},
+    {label:'Steady',data:steady.map((v,i)=>({x:lab[i],y:v})),borderColor:'#7b61ff',backgroundColor:'rgba(123,97,255,.10)',fill:true,pointRadius:0,borderWidth:3,tension:.2}]};
+  if(vChart){vChart.data=data;vChart.update();} else vChart=new Chart($('#vChart'),{type:'line',data,options:baseOpts()});
+}
+
+/* finance sub-tabs */
+function finTab(name){
+  document.querySelectorAll('.fin-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.f===name));
+  document.querySelectorAll('.ftool').forEach(t=>t.classList.toggle('on', t.id==='ft-'+name));
+  if(name==='compound')drawCompound(); if(name==='dca')drawDCA(); if(name==='versus')drawVersus();
+}
+function initFinanceOnce(){
+  if(financeReady) return; financeReady=true;
+  ['cStart','cMonth','cYears','cRate','dMonth','dYears','vPot','vSpread','vGrow','vRate'].forEach(id=>setFill($('#'+id)));
+  ['cStart','cMonth','cYears','cRate'].forEach(id=>$('#'+id).addEventListener('input',drawCompound));
+  ['dMonth','dYears'].forEach(id=>$('#'+id).addEventListener('input',drawDCA));
+  $('#dVol').addEventListener('change',drawDCA); $('#dPlay').addEventListener('click',playDCA);
+  $('#dFund').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{$('#dFund').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawDCA();}));
+  ['vPot','vSpread','vGrow','vRate'].forEach(id=>$('#'+id).addEventListener('input',drawVersus));
+  buildLearn(); renderQuiz(); drawCompound();
+}
+
+/* ---------- LEARN + GLOSSARY ---------- */
+const lessons=[
+  {q:'💵 Saving vs. Investing',a:'<b>Saving</b> is putting money somewhere safe for later — it barely grows. <b>Investing</b> means buying something that can grow a lot more over time, though its value can also fall. Save for things you need soon; invest for goals years away.'},
+  {q:'✨ What is compound interest?',a:'"Money earning money, on top of money it already earned." $100 growing 10% gives $10. Next year you grow 10% of $110 = $11 — more than before. The longer you wait, the faster the snowball rolls.'},
+  {q:'📈 What is a stock?',a:'A <b>stock</b> is a tiny piece of ownership in a company. If the company does well, your slice is worth more; if it does badly, less. You can earn from the price rising and sometimes from <span class="term">dividends</span> (a share of profits).'},
+  {q:'🧺 What is an ETF (like VOO or QQQ)?',a:'An <b>ETF</b> is a basket holding many stocks at once. <b>VOO</b> holds 500 big US companies (the S&amp;P 500); <b>QQQ</b> holds 100 tech-heavy ones (the Nasdaq-100). Baskets spread risk — that\'s <span class="term">diversification</span>.'},
+  {q:'🌱 What is dollar-cost averaging?',a:'Investing the <b>same amount on a regular schedule</b> — say $25 a month — no matter the price. It builds a great habit and means you never have to guess the perfect moment (which even experts can\'t).'},
+  {q:'🎢 Why does risk matter?',a:'Higher possible reward usually means a bumpier ride. Stocks can drop a lot in a year — that\'s <b>risk</b>. Over many years, markets have historically trended up, which is why long-term money can handle more risk than money you need soon.'},
+  {q:'⏰ Why start young?',a:'Thanks to compounding, an extra 10 years can matter more than an extra $10,000. Money invested at 12 has decades to multiply. Starting early is a superpower only young people have!'},
+  {q:'🧠 Needs vs. wants',a:'A <b>need</b> is something you must have; a <b>want</b> is nice to have. A simple habit: cover needs, save/invest a slice, then spend the rest guilt-free. Even "save / invest / spend" jars work.'}
+];
+const glossary=[['Interest','Extra money you earn for letting money grow (or pay when you borrow).'],['Compound','When earnings start earning their own earnings — the snowball.'],['Principal','The starting amount before any growth.'],['Return','How much an investment grew, usually a percent per year.'],['Dividend','A small payment some companies share with stock owners.'],['Portfolio','All the investments you own, together.'],['Diversify','Spreading money so one bad apple won\'t spoil it all.'],['Volatility','How much a price jumps around. High = bumpy.'],['Index','A scoreboard tracking a group of stocks, like the S&P 500.'],['Inflation','When prices slowly rise, so a dollar buys a little less.']];
+function buildLearn(){
+  $('#lessonGrid').innerHTML=lessons.map(l=>`<details class="lesson"><summary>${l.q}<span class="chev">›</span></summary><div class="ans">${l.a}</div></details>`).join('');
+  $('#glossaryGrid').innerHTML=glossary.map(g=>`<div class="panel-card"><h4 style="font-size:18px;margin-bottom:4px"><span class="term">${g[0]}</span></h4><p style="margin:0;font-size:15px;color:var(--body)">${g[1]}</p></div>`).join('');
+}
+
+/* ---------- QUIZ ---------- */
+const quiz=[
+  {q:'What does compound interest mean?',o:['Money earning money on money it already earned','Interest you only pay on loans','A type of bank account','Free government money'],c:0,e:'Yes! Earnings start earning too — the snowball that makes investing powerful.'},
+  {q:'Best reason to start investing young?',o:['You get a prize','Time lets compounding work its magic','It\'s required by law','Stocks never go down'],c:1,e:'Exactly — extra years of compounding are a superpower.'},
+  {q:'An ETF like VOO is best described as…',o:['A single risky company','A basket of many stocks','A savings account','A type of loan'],c:1,e:'Right! ETFs hold many stocks, spreading your risk.'},
+  {q:'Dollar-cost averaging means…',o:['Buying only when prices are low','Investing the same amount on a schedule','Spending a dollar a day','Trading every hour'],c:1,e:'Correct — same amount, regular schedule.'},
+  {q:'Which money should stay SAFE, not invested?',o:['Money for a goal 30 years away','Money you need next month','Money you\'ll never use','None of it'],c:1,e:'Yes — money you need soon should stay safe.'},
+  {q:'"Diversifying" means…',o:['Spending it fast','Spreading it across many investments','Hiding it','Lending it to friends'],c:1,e:'Spot on — one bad investment won\'t sink everything.'}
+];
+let qi=0,qs=0;
+function renderQuiz(){
+  if(qi>=quiz.length){return endQuiz();}
+  const it=quiz[qi];
+  $('#quizCard').innerHTML=`<div class="qbar"><i style="width:${qi/quiz.length*100}%"></i></div>
+   <div class="qmeta"><span>Question ${qi+1} of ${quiz.length}</span><span>Score: ${qs}</span></div>
+   <div class="qtext">${it.q}</div><div id="opts">${it.o.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join('')}</div><div id="qfb"></div>`;
+  $('#opts').querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>ansQuiz(+b.dataset.k)));
+}
+function ansQuiz(k){
+  const it=quiz[qi],opts=$('#opts').querySelectorAll('.opt'); opts.forEach(o=>o.disabled=true);
+  opts[it.c].classList.add('correct'); if(k===it.c){qs++;confettiBurst();} else opts[k].classList.add('wrong');
+  $('#qfb').innerHTML=`<div class="explain">${k===it.c?'✅ ':'💡 '}${it.e}</div><button class="btn btn-green" id="qn" style="margin-top:14px">${qi+1<quiz.length?'Next →':'See my score 🎉'}</button>`;
+  $('#qn').addEventListener('click',()=>{qi++;renderQuiz();});
+}
+function endQuiz(){
+  const p=qs/quiz.length, badge=p===1?'🏆 Money Master':p>=.7?'🌟 Smart Saver':p>=.5?'🌱 Growing Investor':'📚 Just Getting Started';
+  $('#quizCard').innerHTML=`<div class="qend"><div class="score">${qs}/${quiz.length}</div><div class="qbadge">${badge}</div><p style="font-size:18px">Nice work! Every expert started exactly where you are.</p><button class="btn btn-sun" id="qr">Play again 🔁</button></div>`;
+  $('#qr').addEventListener('click',()=>{qi=0;qs=0;renderQuiz();}); if(p>=.7)confettiBurst();
+}
+
+/* ============================================================
+   GOOGLE SIGN-IN + BEEHIIV AUTO-SUBSCRIBE
+   ============================================================ */
+let hubUnlocked=false;
+const isConfigured = !GOOGLE_CLIENT_ID.startsWith("YOUR_GOOGLE_CLIENT_ID");
+
+function setupGoogle(){
+  const slot=$('#googleBtn');
+  if(isConfigured && window.google && google.accounts && google.accounts.id){
+    google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
+    google.accounts.id.renderButton(slot, { theme:'outline', size:'large', shape:'pill', text:'continue_with', width:300 });
+  } else {
+    // Not configured yet (or library blocked): show a styled fallback that explains what to do.
+    slot.innerHTML = `<button class="g-fallback" id="gFallback">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.46 14.97.5 12 .5A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 4.75 12 4.75z"/></svg>
+      Continue with Google</button>`;
+    $('#gFallback').addEventListener('click', ()=>{
+      openModal('Almost there 🛠️', 'Google sign-in turns on once you add your free <b>Google Client ID</b> to <code>index.html</code> — the setup guide walks you through it step by step. For now you can use <b>Preview the hub</b> below to explore all the tools.');
+    });
+  }
+}
+function onGoogleCredential(resp){
+  const data = decodeJwt(resp.credential);
+  const name = data && data.given_name ? data.given_name : 'friend';
+  // Auto-subscribe to the newsletter if the (default-checked) box is ticked.
+  if($('#newsOptIn').checked){
+    fetch(SUBSCRIBE_ENDPOINT, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ credential: resp.credential, subscribe: true })
+    }).catch(()=>{ /* network/endpoint not ready — sign-in still succeeds */ });
+  }
+  unlockHub(false, name);
+}
+function decodeJwt(t){ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return null; } }
+
+function unlockHub(preview, name){
+  hubUnlocked=true;
+  $('#feGate').style.display='none';
+  $('#feHub').style.display='block';
+  if(!preview){
+    $('#signedBar').classList.add('show');
+    $('#signedTxt').textContent = (name?('Welcome, '+name):'You\'re in');
+    if($('#newsOptIn').checked) setTimeout(confettiBurst, 200);
+  }
+  initFinanceOnce();
+  window.scrollTo({top:0,behavior:reduceMotion?'auto':'smooth'});
+}
+function signOut(){
+  hubUnlocked=false;
+  if(isConfigured && window.google && google.accounts) google.accounts.id.disableAutoSelect();
+  $('#feHub').style.display='none';
+  $('#feGate').style.display='block';
+  $('#signedBar').classList.remove('show');
+}
+
+/* ---------- confetti ---------- */
+function confettiBurst(){
+  if(reduceMotion) return;
+  const cv=$('#confetti'),ctx=cv.getContext('2d'); cv.width=innerWidth; cv.height=innerHeight;
+  const cols=['#FF6A3D','#FFC24B','#1fa46a','#7b61ff','#0e9aa7'],parts=[];
+  for(let i=0;i<120;i++)parts.push({x:innerWidth/2,y:innerHeight*.4,vx:(Math.random()-.5)*14,vy:Math.random()*-12-4,g:.35+Math.random()*.2,s:6+Math.random()*7,c:cols[i%cols.length],rot:Math.random()*6,vr:(Math.random()-.5)*.4});
+  let f=0;(function run(){ctx.clearRect(0,0,cv.width,cv.height);f++;parts.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);ctx.restore();});if(f<90)requestAnimationFrame(run);else ctx.clearRect(0,0,cv.width,cv.height);})();
+}
+
+/* ---------- init ---------- */
+setFill($('#ccRange')); drawCC();
+window.addEventListener('load', ()=>{ setupGoogle(); runReveals(); });
+runReveals();
+</script>
+</body>
+</html>
