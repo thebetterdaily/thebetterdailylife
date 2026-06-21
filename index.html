@@ -342,6 +342,29 @@
   .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px}
   .stat .rl{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-family:"Bricolage Grotesque";font-weight:600}
   .stat .sv{font-family:"Bricolage Grotesque";font-weight:700;color:var(--cream);font-size:21px;margin-top:3px;font-variant-numeric:tabular-nums}
+  /* profiles */
+  .pf-switch{display:flex;align-items:center;gap:7px;justify-content:center;flex-wrap:wrap;margin:10px 0 2px}
+  .pf-switch-lbl{font-size:12px;color:var(--muted);font-family:"Bricolage Grotesque";font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .pf-pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-family:"Bricolage Grotesque";font-weight:600;font-size:13.5px;color:var(--ink2);cursor:pointer;transition:.15s;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pf-pill:hover{border-color:var(--gold)}
+  .pf-pill.on{background:var(--gold);color:#241600;border-color:var(--gold)}
+  .pf-pill.add{color:var(--gold);border-style:dashed}
+  .pf-mini{background:none;border:1px solid var(--line);border-radius:9px;padding:5px 8px;font-size:13px;cursor:pointer;color:var(--body)}
+  .pf-mini:hover{border-color:var(--gold)}
+  /* watchlist */
+  .star{background:none;border:0;font-size:21px;line-height:1;cursor:pointer;color:var(--muted);padding:0 2px}
+  .star.on{color:var(--gold)}
+  .mkt-watch{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:rgba(236,200,104,.06);border:1px solid rgba(236,200,104,.22);border-radius:14px}
+  .wl-lbl{font-family:"Bricolage Grotesque";font-weight:700;color:var(--gold);font-size:13.5px}
+  .wl-chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--cream);cursor:pointer;font-variant-numeric:tabular-nums}
+  .wl-chip:hover{border-color:var(--gold)}
+  /* portfolio benchmark */
+  .pf-bench{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:18px}
+  .bench-row{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+  .bench-col{text-align:center}
+  .bench-v{font-family:"Bricolage Grotesque";font-weight:800;font-size:26px;margin-top:2px;font-variant-numeric:tabular-nums}
+  .bench-vs{color:var(--muted);font-family:"Bricolage Grotesque";font-weight:700;font-size:15px}
+  .bench-note{text-align:center;font-size:13.5px;color:var(--cream);margin-top:10px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -589,6 +612,7 @@
             <div class="signed-bar" id="signedBar">✓ <span id="signedTxt">You're in</span> · <span style="cursor:pointer;text-decoration:underline" onclick="signOut()">sign out</span></div>
           </div>
           <div style="text-align:center;margin:8px 0 4px"><span style="font-size:12px;font-weight:700;color:var(--gold);background:rgba(236,200,104,.12);border:1px solid rgba(236,200,104,.32);padding:4px 13px;border-radius:999px">🪙 Virtual money — for learning, not real investing</span></div>
+          <div id="pfSwitcher" class="pf-switch"></div>
 
           <div class="lab-subtabs">
             <button class="on" data-l="markets" onclick="labTab('markets')">📈 Markets</button>
@@ -599,6 +623,7 @@
           <!-- MARKETS -->
           <div class="lpane on" id="lp-markets">
             <div class="sec-head center" style="margin:6px auto 18px"><h2 style="font-size:25px">Markets</h2><p id="mktAsOf">Live prices (about 15 minutes delayed). Tap a fund to see its chart and trade.</p></div>
+            <div class="mkt-watch" id="mktWatch" style="display:none"></div>
             <div class="mkt-grid" id="mktGrid"></div>
           </div>
 
@@ -609,6 +634,7 @@
               <div class="pf-actions"><button class="btn btn-sun" onclick="openAddCash()">＋ Add virtual cash</button><button class="btn btn-light" onclick="resetPortfolio()">Reset</button></div>
             </div>
             <div class="pf-stats" id="pfStats"></div>
+            <div id="pfBench" class="pf-bench"></div>
             <div class="tool" style="grid-template-columns:300px 1fr;align-items:start">
               <div class="chart-card"><h4>Allocation</h4><div class="chart-wrap" style="height:230px"><canvas id="pfDonut"></canvas></div><div class="legend" id="pfDonutLegend" style="justify-content:center"></div></div>
               <div class="chart-card" style="padding:14px 0 4px"><h4 style="padding:0 22px">Holdings</h4><div style="overflow:auto;margin-top:8px"><table class="ytable" id="pfHoldings"></table></div></div>
@@ -618,7 +644,7 @@
 
           <!-- BACKTEST -->
           <div class="lpane" id="lp-backtest">
-            <div class="sec-head center" style="margin:6px auto 16px"><h2 style="font-size:25px">Backtest a portfolio</h2><p>Choose how to split money across the 5 ETFs, then see how it would have done using <b>real history (2012–2024)</b>.</p></div>
+            <div class="sec-head center" style="margin:6px auto 16px"><h2 style="font-size:25px">Backtest a portfolio</h2><p>Choose how to split money across the 5 ETFs, then see how it would have done using <b>real history (<span id="btRangeText">2012–2024</span>)</b>.</p></div>
             <div class="tool">
               <div class="panel-card">
                 <label style="font-family:Bricolage Grotesque;font-weight:600;color:var(--cream);display:flex;justify-content:space-between;margin-bottom:10px">Your mix <span id="btTotal" class="val">100%</span></label>
@@ -635,9 +661,9 @@
                   <div class="res-banner res" style="background:linear-gradient(135deg,#241a52,#2e2566)"><div><div class="rl">Total invested</div><div class="rn" id="btInvested">$0</div><div class="rs" id="btGrowth"></div></div></div>
                 </div>
                 <div class="chart-card"><h4 id="btChartTitle">Portfolio value over time</h4><div class="chart-wrap"><canvas id="btChart"></canvas></div>
-                  <div class="legend"><span><i class="dot" style="background:#8f86b5"></i> Invested</span><span><i class="dot" style="background:var(--gold)"></i> Your mix</span><span><i class="dot" style="background:var(--lilac)"></i> Other approach</span></div></div>
+                  <div class="legend"><span><i class="dot" style="background:#8f86b5"></i> Invested</span><span><i class="dot" style="background:var(--gold)"></i> Your mix</span><span><i class="dot" style="background:var(--lilac)"></i> Other approach</span><span><i class="dot" style="background:#6fd0c2"></i> S&amp;P 500</span></div></div>
                 <div class="note" id="btTake">Pick a mix and press <b>Run backtest</b>.</div>
-                <div class="note" style="background:rgba(255,255,255,.04);border-color:var(--line);color:var(--muted)">📊 Historical calendar-year total returns (dividends reinvested), 2012–2024. Virtual money, for education. Past performance does not predict the future. Not financial advice.</div>
+                <div class="note" id="btDataNote" style="background:rgba(255,255,255,.04);border-color:var(--line);color:var(--muted)">📊 Historical calendar-year total returns (dividends reinvested), 2012–2024. Virtual money, for education. Past performance does not predict the future. Not financial advice.</div>
               </div>
             </div>
           </div>
@@ -940,6 +966,29 @@ const LAB_RET={
 };
 const FALLBACK_PX={SPY:660,VOO:610,QQQ:595,VGT:720,SMH:632};
 const CASH_CAP=1000000, DCA_CAP=20000;
+const LAB_BASE_LAST=LAB_YEARS[LAB_YEARS.length-1];  // last verified embedded year
+let annualLoaded=false;
+async function loadAnnual(){
+  if(annualLoaded) return; annualLoaded=true;
+  try{
+    const r=await fetch(MARKET_ENDPOINT+'?annual=1'); if(!r.ok) return;
+    const d=await r.json(); const A=d.annual||{};
+    const lastComplete=d.lastCompleteYear||(new Date().getFullYear()-1);
+    // append each complete year after our verified data, but only if ALL five ETFs have it (keeps the blend consistent)
+    for(let y=LAB_BASE_LAST+1; y<=lastComplete; y++){
+      if(ETFS.every(s=>A[s]&&A[s][y]!=null&&isFinite(A[s][y]))){
+        LAB_YEARS.push(y); ETFS.forEach(s=>LAB_RET[s].push(+A[s][y]));
+      } else break;
+    }
+    refreshLabRange();
+  }catch(e){}
+}
+function refreshLabRange(){
+  const a=LAB_YEARS[0], b=LAB_YEARS[LAB_YEARS.length-1];
+  const rt=$('#btRangeText'); if(rt) rt.textContent=a+'–'+b;
+  const dn=$('#btDataNote'); if(dn) dn.innerHTML='📊 Historical calendar-year total returns (dividends reinvested), '+a+'–'+b+'. Virtual money, for education. Past performance does not predict the future. Not financial advice.';
+  const sl=$('#btStart'); if(sl){ sl.max=b-1; if(+sl.value>b-1){ sl.value=b-1; const v=$('#btStartV'); if(v)v.textContent=sl.value; setFill(sl); } }
+}
 
 /* ----- live prices ----- */
 const PRICES={}; let quotesAsOf=0, quotesLoading=false;
@@ -964,43 +1013,89 @@ async function loadQuotes(force){
     : '⚠️ Live prices are momentarily unavailable — showing recent values. Tap a fund to trade.';
 }
 
-/* ----- portfolio state + persistence ----- */
-let PF=null, saveTimer=null;
-function newPF(){ return {cash:10000, granted:10000, holdings:{}, tx:[], updated:Date.now()}; }
+/* ----- profiles + portfolio state + persistence ----- */
+const MAX_PROFILES=3;
+let STORE=null, PF=null, saveTimer=null;
+function clamp(v,a,b){ v=+v; if(!isFinite(v))v=a; return Math.max(a,Math.min(b,v)); }
+function newPF(){ return {cash:10000, granted:10000, holdings:{}, tx:[], watch:[], spyEq:{shares:0,invested:0}, updated:Date.now()}; }
+function newProfile(name){ return {name:name||'My Portfolio', pf:newPF()}; }
 function cleanPF(d){
   const o=newPF(); if(!d) return o;
   o.cash=clamp(+d.cash,0,2e6); o.granted=clamp(+d.granted,0,2e6); o.holdings={}; o.tx=Array.isArray(d.tx)?d.tx.slice(-200):[];
+  o.watch=Array.isArray(d.watch)?d.watch.filter(s=>ETFS.includes(s)):[];
+  o.spyEq=(d.spyEq&&isFinite(+d.spyEq.shares))?{shares:Math.max(0,+d.spyEq.shares),invested:Math.max(0,+d.spyEq.invested||0)}:{shares:0,invested:0};
   ETFS.forEach(s=>{ const h=d.holdings&&d.holdings[s]; if(h&&+h.shares>0) o.holdings[s]={shares:+h.shares,cost:+h.cost||0}; });
   return o;
 }
-function clamp(v,a,b){ v=+v; if(!isFinite(v))v=a; return Math.max(a,Math.min(b,v)); }
-async function loadPF(){
-  if(cred){
-    try{ const r=await fetch(PORTFOLIO_ENDPOINT,{headers:{'Authorization':'Bearer '+cred}});
-      if(r.ok){ const d=await r.json(); PF = d.portfolio ? cleanPF(d.portfolio) : newPF(); if(!d.portfolio) savePF(); return; } }catch(e){}
-    PF=newPF();
-  } else {
-    try{ const v=localStorage.getItem('pf_local'); PF = v ? cleanPF(JSON.parse(v)) : newPF(); }catch(e){ PF=newPF(); }
+function cleanStore(d){
+  if(d&&Array.isArray(d.profiles)&&d.profiles.length){
+    const profiles=d.profiles.slice(0,MAX_PROFILES).map(p=>({name:(p&&p.name?String(p.name).slice(0,24):'Portfolio'), pf:cleanPF(p&&p.pf)}));
+    let active=clamp(+d.active,0,profiles.length-1); if(!isFinite(active))active=0;
+    return {profiles, active};
   }
+  if(d&&(d.cash!=null||d.holdings)) return {profiles:[{name:'My Portfolio', pf:cleanPF(d)}], active:0}; // migrate old single-portfolio
+  return {profiles:[newProfile('My Portfolio')], active:0};
+}
+function setActivePF(){ PF=STORE.profiles[STORE.active].pf; }
+async function loadPF(){
+  let raw=null;
+  if(cred){ try{ const r=await fetch(PORTFOLIO_ENDPOINT,{headers:{'Authorization':'Bearer '+cred}}); if(r.ok){ const d=await r.json(); raw=d.portfolio; } }catch(e){} }
+  else { try{ const v=localStorage.getItem('pf_local'); raw=v?JSON.parse(v):null; }catch(e){} }
+  STORE=cleanStore(raw); setActivePF(); if(!raw) savePF();
 }
 function savePF(){
-  if(!PF) return; PF.updated=Date.now();
+  if(!STORE) return; PF.updated=Date.now();
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
-    if(cred){ fetch(PORTFOLIO_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:cred,portfolio:PF})}).catch(()=>{}); }
-    else { try{ localStorage.setItem('pf_local',JSON.stringify(PF)); }catch(e){} }
+    if(cred){ fetch(PORTFOLIO_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:cred,portfolio:STORE})}).catch(()=>{}); }
+    else { try{ localStorage.setItem('pf_local',JSON.stringify(STORE)); }catch(e){} }
   },500);
 }
 function holdingsValue(){ let v=0; for(const s of ETFS){ const h=PF.holdings[s]; if(h) v+=h.shares*priceOf(s); } return v; }
 function totalCostBasis(){ let c=0; for(const s of ETFS){ const h=PF.holdings[s]; if(h) c+=h.cost; } return c; }
 
+/* profile switcher */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderProfiles(){
+  const el=$('#pfSwitcher'); if(!el||!STORE) return;
+  let h='<span class="pf-switch-lbl">👤 Profile</span>';
+  STORE.profiles.forEach((p,i)=>{ h+=`<button class="pf-pill${i===STORE.active?' on':''}" onclick="switchProfile(${i})">${escapeHtml(p.name)}</button>`; });
+  if(STORE.profiles.length<MAX_PROFILES) h+=`<button class="pf-pill add" onclick="addProfile()">＋ New</button>`;
+  h+=`<button class="pf-mini" title="Rename this profile" onclick="renameProfile()">✏️</button>`;
+  if(STORE.profiles.length>1) h+=`<button class="pf-mini" title="Delete this profile" onclick="deleteProfile()">🗑️</button>`;
+  el.innerHTML=h;
+}
+function switchProfile(i){ if(!STORE||i<0||i>=STORE.profiles.length) return; STORE.active=i; setActivePF(); savePF(); renderProfiles(); renderMarkets(); renderPortfolio(); }
+function addProfile(){
+  if(STORE.profiles.length>=MAX_PROFILES) return;
+  openModal('New profile 🌱', `<p style="color:var(--body)">Name this portfolio — a kid's name, or a strategy to try. You can have up to ${MAX_PROFILES}, each with its own cash and holdings.</p>
+    <input type="text" id="profName" maxlength="24" placeholder="e.g. Aisha, or Tech bets" style="width:100%;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:16px;margin:4px 0 12px">
+    <button class="btn btn-sun" style="width:100%;justify-content:center" onclick="addProfileConfirm()">Create profile</button>`);
+  setTimeout(()=>{ const i=$('#profName'); if(i) i.focus(); },60);
+}
+function addProfileConfirm(){
+  const v=($('#profName').value||'').trim().slice(0,24)||('Portfolio '+(STORE.profiles.length+1));
+  STORE.profiles.push(newProfile(v)); STORE.active=STORE.profiles.length-1; setActivePF(); savePF(); closeModal(); renderProfiles(); renderMarkets(); renderPortfolio(); confettiBurst();
+}
+function renameProfile(){
+  openModal('Rename profile ✏️', `<input type="text" id="profRename" maxlength="24" value="${escapeHtml(STORE.profiles[STORE.active].name)}" style="width:100%;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:16px;margin:4px 0 12px">
+    <button class="btn btn-sun" style="width:100%;justify-content:center" onclick="renameProfileConfirm()">Save name</button>`);
+}
+function renameProfileConfirm(){ const v=($('#profRename').value||'').trim().slice(0,24); if(v){ STORE.profiles[STORE.active].name=v; savePF(); } closeModal(); renderProfiles(); }
+function deleteProfile(){
+  if(STORE.profiles.length<=1) return;
+  openModal('Delete this profile?', `<p style="color:var(--body)">This permanently removes <b>${escapeHtml(STORE.profiles[STORE.active].name)}</b> and everything in it. This can't be undone.</p>
+    <div style="display:flex;gap:10px;margin-top:8px"><button class="btn btn-light" style="flex:1;justify-content:center" onclick="closeModal()">Keep it</button><button class="btn btn-sun" style="flex:1;justify-content:center" onclick="deleteProfileConfirm()">Delete</button></div>`);
+}
+function deleteProfileConfirm(){ STORE.profiles.splice(STORE.active,1); if(STORE.active>=STORE.profiles.length) STORE.active=STORE.profiles.length-1; setActivePF(); savePF(); closeModal(); renderProfiles(); renderMarkets(); renderPortfolio(); }
+
 /* ----- MARKETS ----- */
 const sparkCharts={};
 function renderMarkets(){
   const g=$('#mktGrid'); if(!g) return;
-  g.innerHTML=ETFS.map(s=>{ const m=ETF_META[s], p=PRICES[s]||{}, chg=p.chg||0, up=chg>=0;
+  g.innerHTML=ETFS.map(s=>{ const m=ETF_META[s], p=PRICES[s]||{}, chg=p.chg||0, up=chg>=0; const star=PF&&PF.watch&&PF.watch.includes(s);
     return `<div class="mkt-card" onclick="openTrade('${s}')">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="mkt-sym">${s}</div><div class="mkt-name">${m.name}</div></div><span style="font-size:18px">${chg>=0?'📈':'📉'}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="mkt-sym">${s}</div><div class="mkt-name">${m.name}</div></div><button class="star${star?' on':''}" title="${star?'Remove from':'Add to'} watchlist" onclick="event.stopPropagation();toggleWatch('${s}')">${star?'★':'☆'}</button></div>
       <div class="mkt-price">${p.price?usd2(p.price):'—'}</div>
       <div class="mkt-chg ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(chg).toFixed(2)}% today</div>
       <div class="mkt-spark"><canvas id="spark-${s}"></canvas></div>
@@ -1011,7 +1106,17 @@ function renderMarkets(){
     if(sparkCharts[s]) sparkCharts[s].destroy();
     sparkCharts[s]=new Chart(cv,{type:'line',data:{labels:sp.map((_,i)=>i),datasets:[{data:sp,borderColor:up?'#7bd88f':'#f0a8b8',borderWidth:2,pointRadius:0,tension:.3,fill:true,backgroundColor:up?'rgba(123,216,143,.12)':'rgba(240,168,184,.12)'}]},
       options:{responsive:true,maintainAspectRatio:false,animation:false,scales:{x:{display:false},y:{display:false}},plugins:{legend:{display:false},tooltip:{enabled:false}}}}); });
+  renderWatch();
 }
+function renderWatch(){
+  const w=$('#mktWatch'); if(!w) return;
+  const list=(PF&&PF.watch)?PF.watch.filter(s=>ETFS.includes(s)):[];
+  if(!list.length){ w.style.display='none'; w.innerHTML=''; return; }
+  w.style.display='flex';
+  w.innerHTML='<span class="wl-lbl">⭐ Watchlist</span>'+list.map(s=>{ const p=PRICES[s]||{}, chg=p.chg||0, up=chg>=0;
+    return `<button class="wl-chip" onclick="openTrade('${s}')"><b>${s}</b> ${p.price?usd2(p.price):'—'} <span class="${up?'up':'down'}">${up?'▲':'▼'}${Math.abs(chg).toFixed(1)}%</span></button>`; }).join('');
+}
+function toggleWatch(s){ if(!PF) return; PF.watch=PF.watch||[]; const i=PF.watch.indexOf(s); if(i>=0)PF.watch.splice(i,1); else PF.watch.push(s); savePF(); renderMarkets(); }
 
 /* ----- PORTFOLIO ----- */
 let pfDonut;
@@ -1026,6 +1131,17 @@ function renderPortfolio(){
     <div class="stat"><div class="rl">Invested value</div><div class="sv">${usd0(hv)}</div></div>
     <div class="stat"><div class="rl">Gain / loss</div><div class="sv ${gain>=0?'up':'down'}" style="color:${gain>=0?'#7bd88f':'#f0a8b8'}">${gain>=0?'+':''}${usd0(gain)}</div></div>
     <div class="stat"><div class="rl">Cash added (max $1M)</div><div class="sv">${usd0(PF.granted)}</div></div>`;
+  // S&P 500 benchmark (money-weighted): seed once for holdings made before this feature existed
+  PF.spyEq=PF.spyEq||{shares:0,invested:0};
+  if(PF.spyEq.invested<=0 && cost>0){ const sp=priceOf('SPY'); PF.spyEq={shares:cost/sp, invested:cost}; savePF(); }
+  const bEl=$('#pfBench');
+  if(bEl){
+    if(PF.spyEq.invested>0){
+      const spVal=PF.spyEq.shares*priceOf('SPY'), yourPct=cost>0?(hv-cost)/cost*100:0, spPct=(spVal-PF.spyEq.invested)/PF.spyEq.invested*100, diff=hv-spVal, beat=diff>=0;
+      bEl.style.display='block';
+      bEl.innerHTML=`<div class="bench-row"><div class="bench-col"><div class="rl">Your mix</div><div class="bench-v ${yourPct>=0?'up':'down'}">${yourPct>=0?'+':''}${yourPct.toFixed(1)}%</div></div><div class="bench-vs">vs</div><div class="bench-col"><div class="rl">Same money in S&amp;P 500</div><div class="bench-v ${spPct>=0?'up':'down'}">${spPct>=0?'+':''}${spPct.toFixed(1)}%</div></div></div><div class="bench-note">${beat?'🎉 Your mix is ahead of the S&amp;P 500 by '+usd0(Math.abs(diff)):'📉 The S&amp;P 500 is ahead by '+usd0(Math.abs(diff))} right now. <span style="color:var(--muted)">Compares buying the S&amp;P 500 with the same dollars at the same times.</span></div>`;
+    } else { bEl.style.display='block'; bEl.innerHTML='<div class="bench-note" style="color:var(--muted)">📊 Buy an ETF to see how your mix stacks up against just buying the S&amp;P 500.</div>'; }
+  }
   // holdings table
   const rows=ETFS.filter(s=>PF.holdings[s]&&PF.holdings[s].shares>0);
   if(rows.length){
@@ -1091,12 +1207,14 @@ function doTrade(){
   if(side==='buy'){
     if(amt>PF.cash+0.01){ msg.innerHTML='<span class="down">Not enough cash. Add virtual cash or lower the amount.</span>'; return; }
     const sh=amt/px; PF.cash-=amt; const h=PF.holdings[tmSym]||{shares:0,cost:0}; h.shares+=sh; h.cost+=amt; PF.holdings[tmSym]=h;
+    PF.spyEq=PF.spyEq||{shares:0,invested:0}; const _sp=priceOf('SPY'); PF.spyEq.shares+=amt/_sp; PF.spyEq.invested+=amt;
     PF.tx.push({type:'buy',sym:tmSym,shares:sh,amt,price:px,ts:Date.now()});
     msg.innerHTML=`<span class="up">✓ Bought ${sh.toFixed(3)} ${tmSym} for ${usd0(amt)}</span>`; confettiBurst();
   } else {
     const h=PF.holdings[tmSym]; if(!h||h.shares<=0){ msg.innerHTML='<span class="down">You don\'t own any '+tmSym+' yet.</span>'; return; }
     const maxVal=h.shares*px; if(amt>maxVal) amt=maxVal;
     const sh=amt/px, frac=sh/h.shares; PF.cash+=amt; h.cost-=h.cost*frac; h.shares-=sh; if(h.shares<1e-6) delete PF.holdings[tmSym]; else PF.holdings[tmSym]=h;
+    PF.spyEq=PF.spyEq||{shares:0,invested:0}; const _sp=priceOf('SPY'); PF.spyEq.shares=Math.max(0,PF.spyEq.shares-amt/_sp); PF.spyEq.invested=Math.max(0,PF.spyEq.invested-amt);
     PF.tx.push({type:'sell',sym:tmSym,shares:sh,amt,price:px,ts:Date.now()});
     msg.innerHTML=`<span class="up">✓ Sold ${sh.toFixed(3)} ${tmSym} for ${usd0(amt)}</span>`;
   }
@@ -1122,7 +1240,7 @@ function addCashConfirm(){
 function resetPortfolio(){
   openModal('Reset your account?','<p style="color:var(--body)">This clears all virtual holdings and cash and starts you fresh at $10,000. This can\'t be undone.</p><div style="display:flex;gap:10px;margin-top:8px"><button class="btn btn-light" style="flex:1;justify-content:center" onclick="closeModal()">Keep it</button><button class="btn btn-sun" style="flex:1;justify-content:center" onclick="doReset()">Reset</button></div>');
 }
-function doReset(){ PF=newPF(); savePF(); renderPortfolio(); renderMarkets(); closeModal(); }
+function doReset(){ STORE.profiles[STORE.active].pf=newPF(); setActivePF(); savePF(); renderPortfolio(); renderMarkets(); closeModal(); }
 
 /* ----- BACKTEST ----- */
 let btChart=null, btAlloc={SPY:100,VOO:0,QQQ:0,VGT:0,SMH:0};
@@ -1158,6 +1276,8 @@ function runBacktest(){
   const weights={}; ETFS.forEach(s=>weights[s]=btAlloc[s]/t);
   const mode=segVal('btMode','m'), amount=+$('#btAmt').value, startYear=+$('#btStart').value;
   const R=btCompute(weights,mode,amount,startYear);
+  const isAllSpy=weights.SPY>=0.999;
+  const spyR=isAllSpy?null:btCompute({SPY:1,VOO:0,QQQ:0,VGT:0,SMH:0},mode,amount,startYear);
   const endYear=LAB_YEARS[LAB_YEARS.length-1], yearsN=R.yrs.length;
   const finalV=R.primary.final, invested=R.primary.invested, growth=finalV-invested, growthPct=invested>0?growth/invested*100:0;
   countTo($('#btFinal'),finalV); countTo($('#btInvested'),invested);
@@ -1166,15 +1286,20 @@ function runBacktest(){
   $('#btGrowth').innerHTML=`<span style="color:${growth>=0?'#7bd88f':'#f0a8b8'}">${growth>=0?'+':''}${usd0(growth)} (${growthPct.toFixed(0)}%)</span> growth`;
   const altFinal=R.compare.final, altName=(mode==='lump'?'investing that same total monthly (DCA)':'investing it all at once on day one (lump sum)');
   const diff=finalV-altFinal;
+  const spyFinal=spyR?spyR.primary.final:finalV;
+  const spyTxt=isAllSpy?'Your mix <b>is</b> the S&amp;P 500 here.':`Putting that same money entirely in the <b>S&amp;P 500</b> would have ended near <b>${usd0(spyFinal)}</b> — your mix ${finalV>=spyFinal?'<b>beat</b>':'<b>trailed</b>'} the index by <b>${usd0(Math.abs(finalV-spyFinal))}</b>.`;
   $('#btTake').innerHTML=`Over <b>Jan ${startYear} → Dec ${endYear}</b> (${yearsN} years), your mix turned <b>${usd0(invested)}</b> into <b>${usd0(finalV)}</b>. `+
     `${altName.charAt(0).toUpperCase()+altName.slice(1)} would have ended near <b>${usd0(altFinal)}</b> — ${Math.abs(diff)<finalV*0.01?'about the same':'a difference of about <b>'+usd0(Math.abs(diff))+'</b>'}. `+
-    `Lump sum usually wins when markets rise (money invested earlier has more time to grow), while DCA lowers the risk of buying right before a drop and is what most people actually do.`;
+    spyTxt+' '+
+    `<span style="color:var(--muted)">Lump sum usually wins when markets rise; DCA lowers the risk of buying right before a drop.</span>`;
   $('#btChartTitle').textContent='Portfolio value over time · '+(mode==='lump'?'Lump sum':'Monthly DCA');
   const P=R.primary, C=R.compare;
-  const data={datasets:[
+  const dsets=[
     {label:'Invested',data:P.inv.map((v,i)=>({x:P.labels[i],y:v})),borderColor:'#8f86b5',backgroundColor:'rgba(143,134,181,.14)',fill:true,pointRadius:0,borderWidth:2,tension:.12},
     {label:'Your mix',data:P.series.map((v,i)=>({x:P.labels[i],y:v})),borderColor:'#ecc868',backgroundColor:'rgba(236,200,104,.14)',fill:true,pointRadius:0,borderWidth:3,tension:.12},
-    {label:'Other approach',data:C.series.map((v,i)=>({x:C.labels[i],y:v})),borderColor:'#b49cff',borderDash:[6,4],pointRadius:0,borderWidth:2,tension:.12}]};
+    {label:'Other approach',data:C.series.map((v,i)=>({x:C.labels[i],y:v})),borderColor:'#b49cff',borderDash:[6,4],pointRadius:0,borderWidth:2,tension:.12}];
+  if(spyR) dsets.push({label:'S&P 500',data:spyR.primary.series.map((v,i)=>({x:spyR.primary.labels[i],y:v})),borderColor:'#6fd0c2',borderDash:[2,3],pointRadius:0,borderWidth:2,tension:.12});
+  const data={datasets:dsets};
   if(btChart){btChart.data=data;btChart.update();} else btChart=new Chart($('#btChart'),{type:'line',data,options:baseOpts('Years invested')});
 }
 
@@ -1201,7 +1326,9 @@ async function initLab(){
     $('#tmAmt').addEventListener('input',updateTmInfo);
   }
   await loadPF();
+  renderProfiles();
   await loadQuotes(true);
+  loadAnnual();
   renderMarkets(); renderPortfolio();
   labTab('markets');
 }
