@@ -5,7 +5,7 @@
 //   GET /market?symbol=SPY&range=1y           -> { symbol, price, prevClose, changePct, closes[], timestamps[], asOf }
 
 const ALLOWED = ['SPY', 'VOO', 'QQQ', 'VGT', 'SMH'];
-const RANGE_INTERVAL = { '1mo': '1d', '3mo': '1d', '6mo': '1d', '1y': '1wk', '5y': '1mo', 'max': '1mo' };
+const RANGE_INTERVAL = { '1d': '5m', '1mo': '1d', '3mo': '1d', '6mo': '1d', '1y': '1wk', '5y': '1mo', 'max': '1mo' };
 
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
@@ -81,8 +81,18 @@ async function fetchChart(sym, range, interval) {
   for (let i = 0; i < rawCloses.length; i++) {
     if (rawCloses[i] != null) { timestamps.push(ts[i]); closes.push(round2(rawCloses[i])); }
   }
-  const price = meta.regularMarketPrice != null ? round2(meta.regularMarketPrice) : (closes.length ? closes[closes.length - 1] : null);
-  let prevClose = meta.chartPreviousClose != null ? meta.chartPreviousClose : (meta.previousClose != null ? meta.previousClose : (closes.length > 1 ? closes[closes.length - 2] : price));
+  const lastClose = closes.length ? closes[closes.length - 1] : null;
+  const secondLast = closes.length > 1 ? closes[closes.length - 2] : null;
+  // current price (with a sanity guard: if the feed's meta price is wildly off the series, trust the series)
+  let price = meta.regularMarketPrice != null ? meta.regularMarketPrice : lastClose;
+  if (price != null && lastClose != null && lastClose > 0 && Math.abs(price - lastClose) / lastClose > 0.4) price = lastClose;
+  price = round2(price);
+  // TRUE prior-day close for the "% today" figure — NOT chartPreviousClose (that's the start of the chart range)
+  let prevClose = (meta.previousClose != null) ? meta.previousClose
+    : (meta.regularMarketPreviousClose != null) ? meta.regularMarketPreviousClose
+    : (interval === '1d' && secondLast != null) ? secondLast   // daily bars: 2nd-to-last = yesterday
+    : (meta.chartPreviousClose != null) ? meta.chartPreviousClose
+    : (secondLast != null ? secondLast : price);
   prevClose = round2(prevClose);
   const changePct = prevClose ? Math.round(((price - prevClose) / prevClose) * 10000) / 100 : 0;
   const asOf = meta.regularMarketTime ? meta.regularMarketTime * 1000 : Date.now();
