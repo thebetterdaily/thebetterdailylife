@@ -218,6 +218,19 @@
   .consent label b{color:var(--cream)}
   .gate-fine{font-size:12.5px; color:var(--muted); margin-top:14px}
   .preview-link{display:inline-block; margin-top:8px; font-size:14px; color:var(--muted); cursor:pointer; text-decoration:underline}
+  /* email + password sign-in (sits under the Google button) */
+  .email-auth{margin-top:18px}
+  .ea-or{display:flex; align-items:center; gap:12px; color:var(--muted); font-size:13px; margin:4px 0 14px}
+  .ea-or::before,.ea-or::after{content:""; flex:1; height:1px; background:var(--line)}
+  .ea-input{width:100%; padding:11px 14px; border-radius:11px; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--cream); font-size:16px; margin-bottom:10px; box-sizing:border-box; font-family:"Inter"}
+  .ea-input::placeholder{color:var(--muted)}
+  .ea-input:focus{outline:none; border-color:var(--gold)}
+  .ea-btns{display:flex; gap:10px; margin-top:2px}
+  .ea-btns .btn{flex:1; justify-content:center; padding:11px 14px; font-size:15px}
+  .ea-row{display:flex; flex-direction:column; gap:5px; align-items:center; margin-top:12px; min-height:18px}
+  .ea-link{font-size:13.5px; color:var(--muted); cursor:pointer; text-decoration:underline}
+  .ea-link:hover{color:var(--gold-bright)}
+  .ea-msg{font-size:13.5px; text-align:center; line-height:1.4}
 
   .signed-bar{display:none; align-items:center; gap:12px; justify-content:center; background:rgba(236,200,104,.12); color:var(--gold-bright);
     border:1px solid rgba(236,200,104,.34); border-radius:999px; padding:8px 16px; font-size:14px; font-weight:600; width:fit-content; margin:0 auto}
@@ -598,6 +611,19 @@
             <h2>Unlock the Virtual Investing Lab</h2>
             <p>Sign in with Google to get virtual cash, build a portfolio across real ETFs, trade at live prices, and backtest against real history. Free — the calculator, lessons, and quiz above stay open to everyone.</p>
             <div class="gbtn-wrap" id="googleBtn"></div>
+            <div class="email-auth" id="emailAuth">
+              <div class="ea-or"><span>or use email</span></div>
+              <input id="eaEmail" type="email" placeholder="you@example.com" autocomplete="email" class="ea-input">
+              <input id="eaPass" type="password" placeholder="Password (8+ characters)" autocomplete="current-password" class="ea-input" onkeydown="if(event.key==='Enter'){event.preventDefault();emailLogin();}">
+              <div class="ea-btns">
+                <button type="button" class="btn btn-light" id="eaLoginBtn" onclick="emailLogin()">Log in</button>
+                <button type="button" class="btn btn-sun" id="eaSignupBtn" onclick="emailSignup()">Create account</button>
+              </div>
+              <div class="ea-row">
+                <span class="ea-link" id="eaForgot" onclick="emailForgot()">Forgot password?</span>
+                <span class="ea-msg" id="eaMsg"></span>
+              </div>
+            </div>
             <div class="consent">
               <input type="checkbox" id="newsOptIn" checked>
               <label for="newsOptIn">Email me <b>The Better Daily</b> newsletter — simple money &amp; learning ideas each week. Unsubscribe anytime.</label>
@@ -940,8 +966,95 @@ function unlockLab(preview,name){
 }
 function signOut(){
   if(isConfigured && window.google && google.accounts) google.accounts.id.disableAutoSelect();
-  cred=null; hubUnlocked=false;
+  cred=null; hubUnlocked=false; bdlClear();
   $('#labBody').style.display='none'; $('#labGate').style.display='block'; $('#signedBar').classList.remove('show');
+  const ep=$('#eaPass'); if(ep) ep.value=''; eaMsg('');
+}
+
+/* ============================================================
+   EMAIL + PASSWORD SIGN-IN (works alongside Google; Google stays the default).
+   The session token is stored locally and used exactly like the Google token —
+   it rides in `cred`, so loadPF()/savePF() need no changes.
+   ============================================================ */
+const AUTH_ENDPOINT = "/auth";
+const BDL_TOKEN_KEY = "bdl_session", BDL_EMAIL_KEY = "bdl_email";
+function bdlGetToken(){ try{ return localStorage.getItem(BDL_TOKEN_KEY)||null; }catch(e){ return null; } }
+function bdlGetEmail(){ try{ return localStorage.getItem(BDL_EMAIL_KEY)||null; }catch(e){ return null; } }
+function bdlSaveSession(t,e){ try{ if(t)localStorage.setItem(BDL_TOKEN_KEY,t); if(e)localStorage.setItem(BDL_EMAIL_KEY,e); }catch(err){} }
+function bdlClear(){ try{ localStorage.removeItem(BDL_TOKEN_KEY); localStorage.removeItem(BDL_EMAIL_KEY); }catch(e){} }
+async function authPost(action, payload, token){
+  const headers={'Content-Type':'application/json'}; if(token) headers['Authorization']='Bearer '+token;
+  const r=await fetch(AUTH_ENDPOINT,{method:'POST',headers,body:JSON.stringify({action,...payload})});
+  let d={}; try{ d=await r.json(); }catch(e){}
+  if(!d.ok) throw new Error(d.error||('http_'+r.status));
+  return d;
+}
+function eaErr(code){ return ({
+  invalid_login:'Wrong email or password.',
+  account_exists:'That email already has an account — try logging in instead.',
+  invalid_email:'Please enter a valid email address.',
+  password_too_short:'Password must be at least 8 characters.',
+  password_too_long:'That password is too long (max 128).',
+  invalid_password:'Please enter a password.',
+  wrong_password:'Current password is incorrect.',
+  invalid_or_expired:'That reset link has expired — request a new one.',
+  not_authenticated:'Please sign in again.'
+}[code]||'Something went wrong — please try again.'); }
+function eaMsg(t,ok){ const m=$('#eaMsg'); if(m){ m.textContent=t||''; m.style.color=ok?'var(--gold-bright)':'#f0a8b8'; } }
+function nameFromEmail(e){ return (e||'').split('@')[0] || ''; }
+
+function startSession(token,email){
+  cred=token; userName=nameFromEmail(email); bdlSaveSession(token,email);
+  eaMsg('');
+  unlockLab(false,userName);
+}
+async function emailSignup(){
+  const email=($('#eaEmail').value||'').trim(), pass=$('#eaPass').value||'';
+  const news=$('#newsOptIn')?$('#newsOptIn').checked:false;
+  eaMsg('Creating your account…',true);
+  try{ const d=await authPost('signup',{email,password:pass,newsletter:news}); startSession(d.token,d.email); }
+  catch(e){ eaMsg(eaErr(e.message)); }
+}
+async function emailLogin(){
+  const email=($('#eaEmail').value||'').trim(), pass=$('#eaPass').value||'';
+  if(!email||!pass){ eaMsg('Enter your email and password.'); return; }
+  eaMsg('Signing in…',true);
+  try{ const d=await authPost('login',{email,password:pass}); startSession(d.token,d.email); }
+  catch(e){ eaMsg(eaErr(e.message)); }
+}
+async function emailForgot(){
+  const email=($('#eaEmail').value||'').trim();
+  if(!email){ eaMsg('Enter your email above first, then tap “Forgot password”.'); return; }
+  try{ await authPost('reset-request',{email}); }catch(e){}
+  eaMsg('If that email has an account, a reset link is on its way. Check your inbox.',true);
+}
+
+/* resume a saved password session (called when the Lab is opened) */
+function resumeSessionIfAny(){
+  if(hubUnlocked) return;
+  const t=bdlGetToken(); if(!t) return;
+  cred=t; userName=nameFromEmail(bdlGetEmail()); unlockLab(false,userName);
+}
+
+/* reset-link landing: the email links to  https://thebetterdailylife.com/?reset=<token> */
+function bdlGetResetToken(){ try{ return new URLSearchParams(location.search).get('reset'); }catch(e){ return null; } }
+function bdlClearResetUrl(){ try{ const u=new URL(location.href); u.searchParams.delete('reset'); history.replaceState(null,'',u.toString()); }catch(e){} }
+function showResetForm(token){
+  go('finance');
+  openModal('Set a new password 🔑',
+    `<p style="color:var(--body);margin-bottom:10px">Choose a new password for your account (at least 8 characters).</p>
+     <input type="password" id="rsNew" placeholder="New password" autocomplete="new-password" style="width:100%;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:16px;margin:4px 0 6px;box-sizing:border-box">
+     <div id="rsMsg" style="font-size:13px;color:#f0a8b8;min-height:16px;margin-bottom:8px"></div>
+     <button class="btn btn-sun" style="width:100%;justify-content:center" onclick="resetConfirm('${token}')">Update password &amp; sign in</button>`);
+  setTimeout(()=>{ const i=$('#rsNew'); if(i){ i.focus(); i.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); resetConfirm(token); } }); } },60);
+}
+async function resetConfirm(token){
+  const np=$('#rsNew')?$('#rsNew').value:''; const m=$('#rsMsg');
+  if((np||'').length<8){ if(m) m.textContent='Password must be at least 8 characters.'; return; }
+  try{
+    const d=await authPost('reset-confirm',{token,newPassword:np});
+    bdlClearResetUrl(); closeModal(); finTab('lab'); startSession(d.token,d.email); confettiBurst();
+  }catch(e){ if(m) m.textContent=eaErr(e.message); }
 }
 
 /* ============================================================
@@ -1347,7 +1460,7 @@ function finTab(name){
   document.querySelectorAll('.fin-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.f===name));
   document.querySelectorAll('#finance .ftool').forEach(t=>t.classList.toggle('on', t.id==='ft-'+name));
   if(name==='compound') drawCompound();
-  if(name==='lab'){ setupGoogle(); if(hubUnlocked){ $('#labGate').style.display='none'; $('#labBody').style.display='block'; } }
+  if(name==='lab'){ setupGoogle(); resumeSessionIfAny(); if(hubUnlocked){ $('#labGate').style.display='none'; $('#labBody').style.display='block'; } }
 }
 
 /* ---------- confetti ---------- */
@@ -1361,7 +1474,7 @@ function confettiBurst(){
 
 /* ---------- init ---------- */
 setFill($('#ccRange')); drawCC();
-window.addEventListener('load', ()=>{ setupGoogle(); runReveals(); });
+window.addEventListener('load', ()=>{ setupGoogle(); runReveals(); const _rt=bdlGetResetToken(); if(_rt) showResetForm(_rt); });
 runReveals();
 </script>
 </body>
