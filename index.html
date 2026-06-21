@@ -317,7 +317,32 @@
   }
   @media (max-width:560px){ body{font-size:16px} section.block{padding:60px 0} .band{padding:38px 22px} .grid2{grid-template-columns:1fr} footer.site .cols{grid-template-columns:1fr} }
   @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important; scroll-behavior:auto!important} .reveal{opacity:1; transform:none} }
-  </style>
+  
+  /* ===== Virtual Investing Lab ===== */
+  .up{color:#7bd88f} .down{color:#f0a8b8}
+  .lab-subtabs{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:14px 0 10px}
+  .lab-subtabs button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 17px;font-family:"Bricolage Grotesque";font-weight:600;font-size:14.5px;color:var(--ink2);cursor:pointer;transition:.15s}
+  .lab-subtabs button:hover{border-color:var(--gold)}
+  .lab-subtabs button.on{background:var(--gold);color:#241600;border-color:var(--gold)}
+  .lpane{display:none} .lpane.on{display:block;animation:fade .3s}
+  .mkt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+  .mkt-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px 18px;cursor:pointer;transition:.15s}
+  .mkt-card:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:var(--shadow-sm)}
+  .mkt-sym{font-family:"Bricolage Grotesque";font-weight:700;color:var(--cream);font-size:21px;line-height:1}
+  .mkt-name{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .mkt-price{font-family:"Bricolage Grotesque";font-weight:700;color:var(--cream);font-size:23px;margin-top:12px;font-variant-numeric:tabular-nums}
+  .mkt-chg{font-size:13px;font-weight:700;margin-top:1px}
+  .mkt-spark{height:42px;margin-top:8px}
+  .tradebtn{margin-top:12px;width:100%;justify-content:center;padding:9px 14px;font-size:14px}
+  .pf-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+  .pf-bignum{font-family:"Bricolage Grotesque";font-weight:800;font-size:clamp(34px,6vw,52px);color:var(--cream);line-height:1;font-variant-numeric:tabular-nums;margin-top:2px}
+  .pf-gain{font-size:15px;font-weight:700;margin-top:5px}
+  .pf-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .pf-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px}
+  .stat .rl{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-family:"Bricolage Grotesque";font-weight:600}
+  .stat .sv{font-family:"Bricolage Grotesque";font-weight:700;color:var(--cream);font-size:21px;margin-top:3px;font-variant-numeric:tabular-nums}
+</style>
 </head>
 <body>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -542,53 +567,106 @@
         <div class="panel-card quiz" id="quizCard"></div>
       </div>
 
-      <!-- ===== VIRTUAL INVESTING LAB (GATED) ===== -->
+            <!-- ===== VIRTUAL INVESTING LAB (GATED) ===== -->
       <div class="ftool" id="ft-lab">
         <div class="gate" id="labGate">
           <div class="gate-card">
             <div class="lock">🔒</div>
             <h2>Unlock the Virtual Investing Lab</h2>
-            <p>Sign in with Google to invest virtual dollars in real ETF history. It's free — the calculator, lessons, and quiz above stay open to everyone.</p>
+            <p>Sign in with Google to get virtual cash, build a portfolio across real ETFs, trade at live prices, and backtest against real history. Free — the calculator, lessons, and quiz above stay open to everyone.</p>
             <div class="gbtn-wrap" id="googleBtn"></div>
             <div class="consent">
               <input type="checkbox" id="newsOptIn" checked>
               <label for="newsOptIn">Email me <b>The Better Daily</b> newsletter — simple money &amp; learning ideas each week. Unsubscribe anytime.</label>
             </div>
-            <div class="gate-fine">We only use your email to sign you in and (if checked) send the newsletter. No passwords to remember.</div>
+            <div class="gate-fine">Signing in saves your portfolio so it's there on any device. We only use your email to sign you in and (if checked) send the newsletter.</div>
             <span class="preview-link" id="previewLink" onclick="unlockLab(true)">Just exploring? Preview the lab without signing in →</span>
           </div>
         </div>
 
         <div id="labBody" style="display:none">
-          <div class="signed-bar" id="signedBar">✓ <span id="signedTxt">You're in</span> · <span style="cursor:pointer;text-decoration:underline" onclick="signOut()">sign out</span></div>
-          <div class="sec-head center" style="margin:22px auto 26px"><h2 style="font-size:30px">Virtual Investing Lab 🌱</h2><p>Invest <b>virtual dollars</b> in the real past performance of popular ETFs. Compare investing a little every month (dollar-cost averaging) against investing it all at once (lump sum).</p></div>
-          <div class="tool">
-            <div class="panel-card">
-              <div class="ctrl"><label style="margin-bottom:9px">Pick an ETF</label>
-                <div class="seg" id="lFund">
-                  <button class="on" data-s="SPY">SPY<span class="sub">S&amp;P 500</span></button>
-                  <button data-s="QQQ">QQQ<span class="sub">Nasdaq-100</span></button>
-                  <button data-s="VGT">VGT<span class="sub">US Tech</span></button>
-                </div></div>
-              <div class="ctrl"><label>Invest each month <span class="val" id="lMonthV">$100</span></label><input type="range" id="lMonth" min="10" max="1000" step="10" value="100"></div>
-              <div class="ctrl"><label>Start year <span class="val" id="lStartV">2015</span></label><input type="range" id="lStart" min="2010" max="2023" step="1" value="2015"></div>
-              <div class="note" id="lPeriodNote" style="margin-top:6px"></div>
+          <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+            <div class="signed-bar" id="signedBar">✓ <span id="signedTxt">You're in</span> · <span style="cursor:pointer;text-decoration:underline" onclick="signOut()">sign out</span></div>
+          </div>
+          <div style="text-align:center;margin:8px 0 4px"><span style="font-size:12px;font-weight:700;color:var(--gold);background:rgba(236,200,104,.12);border:1px solid rgba(236,200,104,.32);padding:4px 13px;border-radius:999px">🪙 Virtual money — for learning, not real investing</span></div>
+
+          <div class="lab-subtabs">
+            <button class="on" data-l="markets" onclick="labTab('markets')">📈 Markets</button>
+            <button data-l="portfolio" onclick="labTab('portfolio')">💼 My Portfolio</button>
+            <button data-l="backtest" onclick="labTab('backtest')">⏳ Backtest</button>
+          </div>
+
+          <!-- MARKETS -->
+          <div class="lpane on" id="lp-markets">
+            <div class="sec-head center" style="margin:6px auto 18px"><h2 style="font-size:25px">Markets</h2><p id="mktAsOf">Live prices (about 15 minutes delayed). Tap a fund to see its chart and trade.</p></div>
+            <div class="mkt-grid" id="mktGrid"></div>
+          </div>
+
+          <!-- MY PORTFOLIO -->
+          <div class="lpane" id="lp-portfolio">
+            <div class="pf-top">
+              <div><div class="rl" style="color:var(--muted);font-family:Bricolage Grotesque;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em">Total value</div><div class="pf-bignum" id="pfTotal">$0</div><div id="pfGain" class="pf-gain"></div></div>
+              <div class="pf-actions"><button class="btn btn-sun" onclick="openAddCash()">＋ Add virtual cash</button><button class="btn btn-light" onclick="resetPortfolio()">Reset</button></div>
             </div>
-            <div>
-              <div class="grid2">
-                <div class="res-banner res" style="background:linear-gradient(135deg,#241a52,#3c2f16)"><div><div class="rl">🪜 Invested monthly (DCA)</div><div class="rn g" id="lDca">$0</div><div class="rs" id="lDcaSub"></div></div></div>
-                <div class="res-banner res" style="background:linear-gradient(135deg,#241a52,#3a2e7a)"><div><div class="rl">💰 All at once (lump sum)</div><div class="rn" style="color:#cdbfff" id="lLump">$0</div><div class="rs" id="lLumpSub"></div></div></div>
+            <div class="pf-stats" id="pfStats"></div>
+            <div class="tool" style="grid-template-columns:300px 1fr;align-items:start">
+              <div class="chart-card"><h4>Allocation</h4><div class="chart-wrap" style="height:230px"><canvas id="pfDonut"></canvas></div><div class="legend" id="pfDonutLegend" style="justify-content:center"></div></div>
+              <div class="chart-card" style="padding:14px 0 4px"><h4 style="padding:0 22px">Holdings</h4><div style="overflow:auto;margin-top:8px"><table class="ytable" id="pfHoldings"></table></div></div>
+            </div>
+            <div class="chart-card" style="padding:14px 0 4px;margin-top:18px"><h4 style="padding:0 22px">Recent activity</h4><div style="max-height:220px;overflow:auto;margin-top:8px"><table class="ytable" id="pfTx"></table></div></div>
+          </div>
+
+          <!-- BACKTEST -->
+          <div class="lpane" id="lp-backtest">
+            <div class="sec-head center" style="margin:6px auto 16px"><h2 style="font-size:25px">Backtest a portfolio</h2><p>Choose how to split money across the 5 ETFs, then see how it would have done using <b>real history (2012–2024)</b>.</p></div>
+            <div class="tool">
+              <div class="panel-card">
+                <label style="font-family:Bricolage Grotesque;font-weight:600;color:var(--cream);display:flex;justify-content:space-between;margin-bottom:10px">Your mix <span id="btTotal" class="val">100%</span></label>
+                <div id="btAlloc"></div>
+                <div style="display:flex;gap:8px;margin:4px 0 16px;flex-wrap:wrap"><button class="btn btn-light" style="padding:7px 12px;font-size:13px" onclick="btPreset('even')">Split evenly</button><button class="btn btn-light" style="padding:7px 12px;font-size:13px" onclick="btPreset('spy')">100% SPY</button></div>
+                <div class="ctrl"><label style="margin-bottom:9px">How to invest</label><div class="seg" id="btMode"><button class="on" data-m="lump">Lump sum</button><button data-m="dca">Monthly (DCA)</button></div></div>
+                <div class="ctrl"><label><span id="btAmtLbl">Lump amount</span> <span class="val" id="btAmtV">$10,000</span></label><input type="range" id="btAmt" min="100" max="1000000" step="100" value="10000"></div>
+                <div class="ctrl"><label>Start year <span class="val" id="btStartV">2015</span></label><input type="range" id="btStart" min="2012" max="2023" step="1" value="2015"></div>
+                <button class="btn btn-sun" style="width:100%;justify-content:center" onclick="runBacktest()">Run backtest ▶</button>
               </div>
-              <div id="labReturns" style="margin-top:16px"></div>
-              <div class="chart-card"><h4 id="lChartTitle">Your virtual portfolio</h4><div class="chart-wrap"><canvas id="lChart"></canvas></div>
-                <div class="legend"><span><i class="dot" style="background:#8f86b5"></i> Money invested</span><span><i class="dot" style="background:var(--gold)"></i> Monthly (DCA)</span><span><i class="dot" style="background:var(--lilac)"></i> Lump sum</span></div></div>
-              <div class="note" id="lTake"></div>
-              <div class="note" style="background:rgba(255,255,255,.04);border-color:var(--line);color:var(--muted)">📊 Uses <b>historical calendar-year total returns (dividends reinvested), 2010–2024</b> for each ETF — real past performance, shown for education with <b>virtual money</b>. Past performance does not predict the future, and real investing involves risk. Not financial advice.</div>
+              <div>
+                <div class="grid2">
+                  <div class="res-banner res" style="background:linear-gradient(135deg,#241a52,#3c2f16)"><div><div class="rl" id="btMainLbl">Final value</div><div class="rn g" id="btFinal">$0</div><div class="rs" id="btFinalSub"></div></div></div>
+                  <div class="res-banner res" style="background:linear-gradient(135deg,#241a52,#2e2566)"><div><div class="rl">Total invested</div><div class="rn" id="btInvested">$0</div><div class="rs" id="btGrowth"></div></div></div>
+                </div>
+                <div class="chart-card"><h4 id="btChartTitle">Portfolio value over time</h4><div class="chart-wrap"><canvas id="btChart"></canvas></div>
+                  <div class="legend"><span><i class="dot" style="background:#8f86b5"></i> Invested</span><span><i class="dot" style="background:var(--gold)"></i> Your mix</span><span><i class="dot" style="background:var(--lilac)"></i> Other approach</span></div></div>
+                <div class="note" id="btTake">Pick a mix and press <b>Run backtest</b>.</div>
+                <div class="note" style="background:rgba(255,255,255,.04);border-color:var(--line);color:var(--muted)">📊 Historical calendar-year total returns (dividends reinvested), 2012–2024. Virtual money, for education. Past performance does not predict the future. Not financial advice.</div>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- TRADE MODAL -->
+        <div class="modal" id="tradeModal" onclick="if(event.target===this)closeTrade()">
+          <div class="modal-card" style="text-align:left;max-width:470px;width:100%">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start"><div><h3 id="tmName" style="margin:0">SPY</h3><div id="tmDesc" style="font-size:13px;color:var(--muted)"></div></div><button onclick="closeTrade()" style="background:none;border:0;color:var(--muted);font-size:24px;cursor:pointer;line-height:1">×</button></div>
+            <div id="tmPrice" style="font-family:Bricolage Grotesque;font-weight:700;font-size:24px;color:var(--cream);margin:8px 0 2px"></div>
+            <div id="tmChg" style="font-size:13.5px;font-weight:700;margin-bottom:10px"></div>
+            <div class="chart-wrap" style="height:170px"><canvas id="tmChart"></canvas></div>
+            <div class="seg seg-wrap" id="tmRange" style="margin:10px 0"><button data-r="1mo">1M</button><button data-r="6mo">6M</button><button class="on" data-r="1y">1Y</button><button data-r="5y">5Y</button></div>
+            <div class="seg" id="tmSide" style="margin:12px 0 10px"><button class="on" data-k="buy">Buy</button><button data-k="sell">Sell</button></div>
+            <label style="font-family:Bricolage Grotesque;font-weight:600;color:var(--cream);font-size:14px;display:block">Amount ($)</label>
+            <input type="number" id="tmAmt" value="100" min="0" step="10" style="width:100%;margin:6px 0 4px;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:17px">
+            <div style="display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 10px">
+              <button class="btn btn-light" style="padding:6px 11px;font-size:12.5px" onclick="tmQuick(100)">$100</button>
+              <button class="btn btn-light" style="padding:6px 11px;font-size:12.5px" onclick="tmQuick(1000)">$1k</button>
+              <button class="btn btn-light" style="padding:6px 11px;font-size:12.5px" onclick="tmQuick(10000)">$10k</button>
+              <button class="btn btn-light" style="padding:6px 11px;font-size:12.5px" id="tmMaxBtn" onclick="tmMax()">Max</button>
+            </div>
+            <div id="tmInfo" style="font-size:13px;color:var(--muted);margin-bottom:10px"></div>
+            <button class="btn btn-sun" style="width:100%;justify-content:center" id="tmGo" onclick="doTrade()">Buy SPY</button>
+            <div id="tmMsg" style="font-size:13.5px;margin-top:10px;text-align:center"></div>
+          </div>
+        </div>
       </div>
-    </div>
+</div>
   </section>
 </section>
 
@@ -657,12 +735,15 @@
    Paste your Google OAuth Client ID here (it is NOT secret).
    ============================================================ */
 const GOOGLE_CLIENT_ID = "347224501690-l3u3m1photpe79gprq1939as322emjvl.apps.googleusercontent.com";
-const SUBSCRIBE_ENDPOINT = "/subscribe";   // maps to functions/subscribe.js on Cloudflare Pages
+const SUBSCRIBE_ENDPOINT = "/subscribe";
+const MARKET_ENDPOINT = "/market";
+const PORTFOLIO_ENDPOINT = "/portfolio";
 /* ============================================================ */
 
 const $ = s => document.querySelector(s);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const usd0 = n => '$' + Math.round(n).toLocaleString('en-US');
+const usd0 = n => (n<0?'-$':'$') + Math.abs(Math.round(n)).toLocaleString('en-US');
+const usd2 = n => (n<0?'-$':'$') + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('#yr').textContent = new Date().getFullYear();
 if(window.Chart){ Chart.defaults.color='#9c92c3'; Chart.defaults.font.family='Inter'; }
 
@@ -678,22 +759,20 @@ function go(id){
 $('#burger').addEventListener('click',()=>$('#navlinks').classList.toggle('open'));
 addEventListener('scroll',()=>$('#nav').classList.toggle('scrolled', scrollY>8));
 
-/* ---------- scroll reveals ---------- */
+/* ---------- reveals + modal ---------- */
 const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }),{threshold:.12});
 function runReveals(){ document.querySelectorAll('.page.active .reveal:not(.in)').forEach(el=>io.observe(el)); }
-
-/* ---------- modal ---------- */
 function openModal(t,b){ $('#modalTitle').textContent=t; $('#modalBody').innerHTML=b; $('#modal').classList.add('show'); }
 function closeModal(){ $('#modal').classList.remove('show'); }
 
 /* ---------- shared helpers ---------- */
 function setFill(el){ const min=+el.min,max=+el.max,v=+el.value; el.style.backgroundSize=((v-min)/(max-min)*100)+'% 100%'; }
-function countTo(el,to){ if(reduceMotion){el.textContent=usd0(to);return;} const from=el._c||0,st=performance.now();
+function countTo(el,to){ if(!el) return; if(reduceMotion){el.textContent=usd0(to);return;} const from=el._c||0,st=performance.now();
   cancelAnimationFrame(el._r); const step=now=>{const t=Math.min(1,(now-st)/600),e=1-Math.pow(1-t,3),v=from+(to-from)*e; el.textContent=usd0(v); el._c=v; if(t<1)el._r=requestAnimationFrame(step); else {el.textContent=usd0(to);el._c=to;}}; el._r=requestAnimationFrame(step); }
 function baseOpts(xlabel){ return {responsive:true,maintainAspectRatio:false,animation:{duration:reduceMotion?0:700},
-  scales:{x:{type:'linear',title:{display:true,text:xlabel||'Years',color:'#9c92c3',font:{size:12}},grid:{display:false},ticks:{maxTicksLimit:8,callback:function(v){return Math.round(this.getLabelForValue(v));}}},
-  y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.07)'},ticks:{callback:v=>'$'+(v>=1000?(v/1000).toFixed(v>=10000?0:1)+'k':v)}}},
-  plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'Year '+Math.round(c[0].parsed.x),label:c=>c.dataset.label+': '+usd0(c.parsed.y)},padding:10,titleFont:{family:'Bricolage Grotesque'}}}}; }
+  scales:{x:{type:'linear',title:{display:!!xlabel,text:xlabel||'',color:'#9c92c3',font:{size:12}},grid:{display:false},ticks:{maxTicksLimit:8,callback:function(v){return Math.round(this.getLabelForValue(v));}}},
+  y:{beginAtZero:false,grid:{color:'rgba(255,255,255,.07)'},ticks:{callback:v=>'$'+(Math.abs(v)>=1000?(v/1000).toFixed(Math.abs(v)>=10000?0:1)+'k':Math.round(v))}}},
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+usd0(c.parsed.y)},padding:10,titleFont:{family:'Bricolage Grotesque'}}}}; }
 
 /* ============================================================
    1% BETTER — hero signature
@@ -735,6 +814,7 @@ function compoundSim(P, contrib, freq, timing, ratePct, compN, years){
 }
 let cChart;
 function drawCompound(){
+  if(!$('#cStart')) return;
   const P=+$('#cStart').value, contrib=+$('#cContrib').value, years=+$('#cYears').value, rate=+$('#cRate').value;
   const freq=segVal('cFreq','f'), timing=segVal('cTiming','t'), compN=+segVal('cComp','n');
   $('#cStartV').textContent=usd0(P); $('#cContribV').textContent=usd0(contrib); $('#cRateV').textContent=rate+'%'; $('#cYearsV').textContent=years;
@@ -751,67 +831,16 @@ function drawCompound(){
   $('#cTable').innerHTML=h+'</tbody>';
 }
 
-/* ============================================================
-   VIRTUAL INVESTING LAB — real ETF history (gated)
-   Calendar-year total returns (dividends reinvested), 2010–2024.
-   Sources: financecharts / Yahoo Finance / tradethatswing.
-   ============================================================ */
-const LAB_YEARS=[2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
-const LAB_RET={
-  SPY:[15.06,1.89,15.99,32.31,13.46,1.25,11.93,21.70,-4.56,31.22,18.37,28.75,-18.17,26.18,24.89],
-  QQQ:[19.91,3.38,18.12,36.63,19.18,9.45,7.10,32.66,-0.12,38.96,48.60,27.42,-32.58,54.86,25.58],
-  VGT:[12.78,0.56,13.96,30.96,17.99,5.04,13.77,37.07,2.45,48.61,46.00,30.45,-29.70,52.65,29.31]
-};
-const LAB_NAME={SPY:'S&P 500 (500 big U.S. companies)', QQQ:'Nasdaq-100 (100 tech-heavy companies)', VGT:'U.S. tech sector'};
-function labParams(){ const b=$('#lFund .on'); return {sym:b.dataset.s, monthly:+$('#lMonth').value, start:+$('#lStart').value}; }
-function replay(sym, startYear, monthly){
-  const i0=LAB_YEARS.indexOf(startYear);
-  const series=LAB_RET[sym].slice(i0).map(x=>x/100);
-  const months=series.length*12, lumpTotal=monthly*months;
-  let dcaBal=0, dcaInv=0, lumpBal=lumpTotal;
-  const dca=[0], lump=[lumpTotal], inv=[0], labels=[0];
-  let mi=0;
-  for(const annual of series){ const mf=Math.pow(1+annual,1/12);
-    for(let m=1;m<=12;m++){ dcaBal+=monthly; dcaInv+=monthly; dcaBal*=mf; lumpBal*=mf; mi++; dca.push(dcaBal); lump.push(lumpBal); inv.push(dcaInv); labels.push(mi/12); } }
-  return {dca,lump,inv,labels,months,lumpTotal,years:series.length,endYear:LAB_YEARS[LAB_YEARS.length-1],annual:LAB_RET[sym].slice(i0)};
-}
-let lChart;
-function drawLab(){
-  const p=labParams();
-  $('#lMonthV').textContent=usd0(p.monthly); $('#lStartV').textContent=p.start;
-  ['lMonth','lStart'].forEach(id=>setFill($('#'+id)));
-  const r=replay(p.sym, p.start, p.monthly);
-  const dcaFinal=r.dca.at(-1), lumpFinal=r.lump.at(-1), invested=r.lumpTotal;
-  countTo($('#lDca'),dcaFinal); countTo($('#lLump'),lumpFinal);
-  $('#lDcaSub').textContent='invested '+usd0(invested)+' over '+r.years+' yrs';
-  $('#lLumpSub').textContent='invested '+usd0(invested)+' on day one';
-  $('#lPeriodNote').innerHTML='Replaying real <b>'+p.sym+'</b> returns, Jan '+p.start+' → Dec '+r.endYear+' ('+r.years+' years). Both invest the same <b>'+usd0(invested)+'</b> total.';
-  $('#lChartTitle').textContent=p.sym+' · '+LAB_NAME[p.sym];
-  // annual return chips
-  let chips='<div style="font-size:12px;color:var(--muted);margin-bottom:7px;font-family:Bricolage Grotesque;font-weight:600;letter-spacing:.04em;text-transform:uppercase">'+p.sym+' yearly returns</div><div style="display:flex;flex-wrap:wrap;gap:6px">';
-  r.annual.forEach((v,i)=>{ const up=v>=0; chips+='<span style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:7px;background:'+(up?'rgba(236,200,104,.14)':'rgba(232,130,154,.16)')+';color:'+(up?'#f0d488':'#f0a8b8')+'">'+LAB_YEARS[LAB_YEARS.indexOf(p.start)+i]+' '+(up?'+':'')+v.toFixed(0)+'%</span>'; });
-  chips+='</div>'; $('#labReturns').innerHTML=chips;
-  // takeaway
-  const diff=Math.abs(lumpFinal-dcaFinal); const lumpWon=lumpFinal>=dcaFinal;
-  $('#lTake').innerHTML='🏁 Over this stretch, <b>'+(lumpWon?'lump sum':'investing monthly')+'</b> came out about <b>'+usd0(diff)+'</b> ahead. '+(lumpWon?'Putting it all in early gave that money more years to grow — which usually wins when markets rise over time.':'Spreading money in meant more of it was invested through the dip and bought in cheaper — DCA\'s edge when prices fall early.')+' But <b>investing monthly is what most people actually do</b> (you earn money a bit at a time), and it lowers the risk of buying right before a drop. Both beat leaving it in cash.';
-  const data={datasets:[
-    {label:'Money invested',data:r.inv.map((v,i)=>({x:r.labels[i],y:v})),borderColor:'#8f86b5',backgroundColor:'rgba(143,134,181,.16)',fill:true,pointRadius:0,borderWidth:2,tension:.12},
-    {label:'Monthly (DCA)',data:r.dca.map((v,i)=>({x:r.labels[i],y:v})),borderColor:'#ecc868',backgroundColor:'rgba(236,200,104,.14)',fill:true,pointRadius:0,borderWidth:3,tension:.12},
-    {label:'Lump sum',data:r.lump.map((v,i)=>({x:r.labels[i],y:v})),borderColor:'#b49cff',backgroundColor:'rgba(180,156,255,.10)',fill:true,pointRadius:0,borderWidth:3,tension:.12}]};
-  const opts=baseOpts('Years invested');
-  if(lChart){lChart.data=data;lChart.update();} else lChart=new Chart($('#lChart'),{type:'line',data,options:opts});
-}
-
-/* ---------- LEARN + GLOSSARY (free) ---------- */
+/* ---------- LEARN + GLOSSARY ---------- */
 const lessons=[
   {q:'💵 Saving vs. Investing',a:'<b>Saving</b> is putting money somewhere safe for later — it barely grows. <b>Investing</b> means buying something that can grow a lot more over time, though its value can also fall. Save for things you need soon; invest for goals years away.'},
   {q:'✨ What is compound interest?',a:'"Money earning money, on top of money it already earned." $100 growing 10% gives $10. Next year you grow 10% of $110 = $11 — more than before. The longer you wait, the faster the snowball rolls.'},
   {q:'📈 What is a stock?',a:'A <b>stock</b> is a tiny piece of ownership in a company. If the company does well, your slice is worth more; if it does badly, less. You can earn from the price rising and sometimes from <span class="term">dividends</span> (a share of profits).'},
-  {q:'🧺 What is an ETF (like SPY, QQQ, or VGT)?',a:'An <b>ETF</b> is a basket holding many stocks at once. <b>SPY</b> holds 500 big US companies (the S&amp;P 500); <b>QQQ</b> holds 100 tech-heavy ones (the Nasdaq-100); <b>VGT</b> holds US technology companies. Baskets spread risk — that\'s <span class="term">diversification</span>.'},
+  {q:'🧺 What is an ETF (SPY, VOO, QQQ, VGT, SMH)?',a:'An <b>ETF</b> is a basket holding many stocks at once. <b>SPY</b> and <b>VOO</b> both hold the 500 big US companies (the S&amp;P 500); <b>QQQ</b> holds 100 tech-heavy ones; <b>VGT</b> holds US tech; <b>SMH</b> holds chip makers. Baskets spread risk — that\'s <span class="term">diversification</span>.'},
   {q:'🌱 What is dollar-cost averaging?',a:'Investing the <b>same amount on a regular schedule</b> — say $25 a month — no matter the price. It builds a great habit and means you never have to guess the perfect moment (which even experts can\'t).'},
-  {q:'🎢 Why does risk matter?',a:'Higher possible reward usually means a bumpier ride. Stocks can drop a lot in a year — that\'s <b>risk</b>. Over many years, markets have historically trended up, which is why long-term money can handle more risk than money you need soon.'},
+  {q:'🎢 Why does risk matter?',a:'Higher possible reward usually means a bumpier ride. A chip ETF like SMH can soar or drop far more than the S&amp;P 500 in a single year — that\'s <b>risk</b>. Over many years markets have trended up, which is why long-term money can handle more risk.'},
   {q:'⏰ Why start young?',a:'Thanks to compounding, an extra 10 years can matter more than an extra $10,000. Money invested at 12 has decades to multiply. Starting early is a superpower only young people have!'},
-  {q:'🧠 Needs vs. wants',a:'A <b>need</b> is something you must have; a <b>want</b> is nice to have. A simple habit: cover needs, save/invest a slice, then spend the rest guilt-free. Even "save / invest / spend" jars work.'}
+  {q:'🧠 Needs vs. wants',a:'A <b>need</b> is something you must have; a <b>want</b> is nice to have. A simple habit: cover needs, save/invest a slice, then spend the rest guilt-free.'}
 ];
 const glossary=[['Interest','Extra money you earn for letting money grow (or pay when you borrow).'],['Compound','When earnings start earning their own earnings — the snowball.'],['Principal','The starting amount before any growth.'],['Return','How much an investment grew, usually a percent per year.'],['Dividend','A small payment some companies share with stock owners.'],['Portfolio','All the investments you own, together.'],['Diversify','Spreading money so one bad apple won\'t spoil it all.'],['Volatility','How much a price jumps around. High = bumpy.'],['Index','A scoreboard tracking a group of stocks, like the S&P 500.'],['Inflation','When prices slowly rise, so a dollar buys a little less.']];
 let learnBuilt=false;
@@ -821,7 +850,7 @@ function buildLearn(){
   $('#glossaryGrid').innerHTML=glossary.map(g=>`<div class="panel-card"><h4 style="font-size:18px;margin-bottom:4px"><span class="term">${g[0]}</span></h4><p style="margin:0;font-size:15px;color:var(--body)">${g[1]}</p></div>`).join('');
 }
 
-/* ---------- QUIZ (free) ---------- */
+/* ---------- QUIZ ---------- */
 const quiz=[
   {q:'What does compound interest mean?',o:['Money earning money on money it already earned','Interest you only pay on loans','A type of bank account','Free government money'],c:0,e:'Yes! Earnings start earning too — the snowball that makes investing powerful.'},
   {q:'Best reason to start investing young?',o:['You get a prize','Time lets compounding work its magic','It\'s required by law','Stocks never go down'],c:1,e:'Exactly — extra years of compounding are a superpower.'},
@@ -853,9 +882,9 @@ function endQuiz(){
 }
 
 /* ============================================================
-   GOOGLE SIGN-IN + BEEHIIV AUTO-SUBSCRIBE (gates the Lab only)
+   GOOGLE SIGN-IN (gates the Lab + identifies the saved portfolio)
    ============================================================ */
-let hubUnlocked=false, googleReady=false;
+let hubUnlocked=false, googleReady=false, cred=null, userName='';
 const isConfigured = !GOOGLE_CLIENT_ID.startsWith("YOUR_GOOGLE_CLIENT_ID");
 function setupGoogle(){
   const slot=$('#googleBtn'); if(!slot || googleReady) return;
@@ -863,36 +892,322 @@ function setupGoogle(){
     googleReady=true;
     google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
     google.accounts.id.renderButton(slot, { theme:'filled_black', size:'large', shape:'pill', text:'continue_with', width:300 });
-  } else if(!isConfigured) {
-    slot.innerHTML = `<button class="g-fallback" id="gFallback">
-      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.46 14.97.5 12 .5A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 4.75 12 4.75z"/></svg>
-      Continue with Google</button>`;
-    $('#gFallback').addEventListener('click', ()=>openModal('Almost there 🛠️','Google sign-in turns on once your <b>Google Client ID</b> is set in <code>index.html</code> and the site is deployed. For now use <b>Preview the lab</b> below to explore.'));
+  } else if(!isConfigured){
+    slot.innerHTML=`<button class="g-fallback" id="gFallback"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.46 14.97.5 12 .5A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 4.75 12 4.75z"/></svg> Continue with Google</button>`;
+    $('#gFallback').addEventListener('click',()=>openModal('Almost there 🛠️','Google sign-in turns on once your <b>Google Client ID</b> is set and the site is deployed. For now use <b>Preview the lab</b> below.'));
   }
 }
 function onGoogleCredential(resp){
-  const data=decodeJwt(resp.credential); const name=data&&data.given_name?data.given_name:'';
+  cred=resp.credential;
+  const data=decodeJwt(cred); userName=data&&data.given_name?data.given_name:'';
   if($('#newsOptIn').checked){
-    fetch(SUBSCRIBE_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:resp.credential,subscribe:true})}).catch(()=>{});
+    fetch(SUBSCRIBE_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:cred,subscribe:true})}).catch(()=>{});
   }
-  unlockLab(false,name);
+  unlockLab(false,userName);
 }
 function decodeJwt(t){ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return null; } }
 function unlockLab(preview,name){
   hubUnlocked=true;
-  $('#labGate').style.display='none';
-  $('#labBody').style.display='block';
-  if(!preview){ $('#signedBar').classList.add('show'); $('#signedTxt').textContent=name?('Welcome, '+name):'You\'re in'; if($('#newsOptIn').checked) setTimeout(confettiBurst,200); }
+  $('#labGate').style.display='none'; $('#labBody').style.display='block';
+  if(!preview){ $('#signedBar').classList.add('show'); $('#signedTxt').textContent=name?('Welcome, '+name):'You\'re in'; }
   initLab();
 }
 function signOut(){
-  hubUnlocked=false;
   if(isConfigured && window.google && google.accounts) google.accounts.id.disableAutoSelect();
+  cred=null; hubUnlocked=false;
   $('#labBody').style.display='none'; $('#labGate').style.display='block'; $('#signedBar').classList.remove('show');
 }
 
-/* ---------- finance tabs + lazy init ---------- */
-let freeInit=false, labInit=false;
+/* ============================================================
+   VIRTUAL INVESTING LAB — markets, trading, portfolio, backtest
+   ============================================================ */
+const ETFS=['SPY','VOO','QQQ','VGT','SMH'];
+const ETF_META={
+  SPY:{name:'SPDR S&P 500',desc:'500 biggest U.S. companies',color:'#ecc868'},
+  VOO:{name:'Vanguard S&P 500',desc:'The same 500, Vanguard',color:'#6fd0c2'},
+  QQQ:{name:'Invesco QQQ',desc:'100 tech-heavy Nasdaq names',color:'#b49cff'},
+  VGT:{name:'Vanguard Info Tech',desc:'U.S. technology sector',color:'#f0a8b8'},
+  SMH:{name:'VanEck Semiconductor',desc:'Chip makers (spicy! 🌶️)',color:'#84c98b'}
+};
+// Historical calendar-year total returns (dividends reinvested), 2012–2024.
+const LAB_YEARS=[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+const LAB_RET={
+  SPY:[15.99,32.31,13.46,1.25,11.93,21.70,-4.56,31.22,18.37,28.75,-18.17,26.18,24.89],
+  VOO:[16.00,32.39,13.55,1.31,12.17,21.77,-4.50,31.35,18.29,28.78,-18.19,26.32,24.98],
+  QQQ:[18.12,36.63,19.18,9.45,7.10,32.66,-0.12,38.96,48.60,27.42,-32.58,54.86,25.58],
+  VGT:[13.96,30.96,17.99,5.04,13.77,37.07,2.45,48.61,46.00,30.45,-29.70,52.65,29.31],
+  SMH:[8.56,33.31,30.20,-0.37,35.53,38.44,-9.04,64.44,55.54,42.14,-33.52,73.37,39.08]
+};
+const FALLBACK_PX={SPY:660,VOO:610,QQQ:595,VGT:720,SMH:632};
+const CASH_CAP=1000000, DCA_CAP=20000;
+
+/* ----- live prices ----- */
+const PRICES={}; let quotesAsOf=0, quotesLoading=false;
+function priceOf(s){ return (PRICES[s]&&PRICES[s].price) ? PRICES[s].price : FALLBACK_PX[s]; }
+function anyLive(){ return Object.values(PRICES).some(p=>p&&p.live); }
+async function loadQuotes(force){
+  if(quotesLoading) return; if(!force && quotesAsOf && Date.now()-quotesAsOf<60000) return;
+  quotesLoading=true;
+  try{
+    const r=await fetch(MARKET_ENDPOINT+'?symbols='+ETFS.join(','));
+    if(r.ok){ const d=await r.json();
+      ETFS.forEach(s=>{ const q=d.quotes&&d.quotes[s];
+        if(q&&!q.error&&q.price){ PRICES[s]={price:q.price,prev:q.prevClose,chg:q.changePct,spark:q.spark||[],live:true}; }
+        else if(!PRICES[s]){ PRICES[s]={price:FALLBACK_PX[s],prev:FALLBACK_PX[s],chg:0,spark:[],live:false}; } });
+      quotesAsOf=Date.now();
+    } else throw 0;
+  }catch(e){ ETFS.forEach(s=>{ if(!PRICES[s]) PRICES[s]={price:FALLBACK_PX[s],prev:FALLBACK_PX[s],chg:0,spark:[],live:false}; }); }
+  quotesLoading=false;
+  const note=$('#mktAsOf');
+  if(note) note.innerHTML = anyLive()
+    ? 'Live prices, about 15 minutes delayed · updated '+new Date(quotesAsOf).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})+'. Tap a fund to trade.'
+    : '⚠️ Live prices are momentarily unavailable — showing recent values. Tap a fund to trade.';
+}
+
+/* ----- portfolio state + persistence ----- */
+let PF=null, saveTimer=null;
+function newPF(){ return {cash:10000, granted:10000, holdings:{}, tx:[], updated:Date.now()}; }
+function cleanPF(d){
+  const o=newPF(); if(!d) return o;
+  o.cash=clamp(+d.cash,0,2e6); o.granted=clamp(+d.granted,0,2e6); o.holdings={}; o.tx=Array.isArray(d.tx)?d.tx.slice(-200):[];
+  ETFS.forEach(s=>{ const h=d.holdings&&d.holdings[s]; if(h&&+h.shares>0) o.holdings[s]={shares:+h.shares,cost:+h.cost||0}; });
+  return o;
+}
+function clamp(v,a,b){ v=+v; if(!isFinite(v))v=a; return Math.max(a,Math.min(b,v)); }
+async function loadPF(){
+  if(cred){
+    try{ const r=await fetch(PORTFOLIO_ENDPOINT,{headers:{'Authorization':'Bearer '+cred}});
+      if(r.ok){ const d=await r.json(); PF = d.portfolio ? cleanPF(d.portfolio) : newPF(); if(!d.portfolio) savePF(); return; } }catch(e){}
+    PF=newPF();
+  } else {
+    try{ const v=localStorage.getItem('pf_local'); PF = v ? cleanPF(JSON.parse(v)) : newPF(); }catch(e){ PF=newPF(); }
+  }
+}
+function savePF(){
+  if(!PF) return; PF.updated=Date.now();
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    if(cred){ fetch(PORTFOLIO_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:cred,portfolio:PF})}).catch(()=>{}); }
+    else { try{ localStorage.setItem('pf_local',JSON.stringify(PF)); }catch(e){} }
+  },500);
+}
+function holdingsValue(){ let v=0; for(const s of ETFS){ const h=PF.holdings[s]; if(h) v+=h.shares*priceOf(s); } return v; }
+function totalCostBasis(){ let c=0; for(const s of ETFS){ const h=PF.holdings[s]; if(h) c+=h.cost; } return c; }
+
+/* ----- MARKETS ----- */
+const sparkCharts={};
+function renderMarkets(){
+  const g=$('#mktGrid'); if(!g) return;
+  g.innerHTML=ETFS.map(s=>{ const m=ETF_META[s], p=PRICES[s]||{}, chg=p.chg||0, up=chg>=0;
+    return `<div class="mkt-card" onclick="openTrade('${s}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="mkt-sym">${s}</div><div class="mkt-name">${m.name}</div></div><span style="font-size:18px">${chg>=0?'📈':'📉'}</span></div>
+      <div class="mkt-price">${p.price?usd2(p.price):'—'}</div>
+      <div class="mkt-chg ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(chg).toFixed(2)}% today</div>
+      <div class="mkt-spark"><canvas id="spark-${s}"></canvas></div>
+      <button class="btn btn-sun tradebtn" onclick="event.stopPropagation();openTrade('${s}')">Trade</button>
+    </div>`; }).join('');
+  ETFS.forEach(s=>{ const p=PRICES[s]||{}, sp=(p.spark&&p.spark.length>1)?p.spark:[priceOf(s),priceOf(s)]; const up=(p.chg||0)>=0;
+    const cv=$('#spark-'+s); if(!cv) return;
+    if(sparkCharts[s]) sparkCharts[s].destroy();
+    sparkCharts[s]=new Chart(cv,{type:'line',data:{labels:sp.map((_,i)=>i),datasets:[{data:sp,borderColor:up?'#7bd88f':'#f0a8b8',borderWidth:2,pointRadius:0,tension:.3,fill:true,backgroundColor:up?'rgba(123,216,143,.12)':'rgba(240,168,184,.12)'}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,scales:{x:{display:false},y:{display:false}},plugins:{legend:{display:false},tooltip:{enabled:false}}}}); });
+}
+
+/* ----- PORTFOLIO ----- */
+let pfDonut;
+function renderPortfolio(){
+  if(!PF||!$('#pfTotal')) return;
+  const hv=holdingsValue(), cost=totalCostBasis(), total=PF.cash+hv;
+  const gain=hv-cost, gainPct=cost>0?gain/cost*100:0;
+  countTo($('#pfTotal'),total);
+  $('#pfGain').innerHTML = (cost>0? `<span class="${gain>=0?'up':'down'}">${gain>=0?'▲':'▼'} ${usd0(Math.abs(gain))} (${gainPct.toFixed(1)}%) on investments</span>` : '<span style="color:var(--muted)">Buy an ETF to start growing</span>');
+  $('#pfStats').innerHTML=`
+    <div class="stat"><div class="rl">Cash</div><div class="sv">${usd0(PF.cash)}</div></div>
+    <div class="stat"><div class="rl">Invested value</div><div class="sv">${usd0(hv)}</div></div>
+    <div class="stat"><div class="rl">Gain / loss</div><div class="sv ${gain>=0?'up':'down'}" style="color:${gain>=0?'#7bd88f':'#f0a8b8'}">${gain>=0?'+':''}${usd0(gain)}</div></div>
+    <div class="stat"><div class="rl">Cash added (max $1M)</div><div class="sv">${usd0(PF.granted)}</div></div>`;
+  // holdings table
+  const rows=ETFS.filter(s=>PF.holdings[s]&&PF.holdings[s].shares>0);
+  if(rows.length){
+    let h='<thead><tr><th>Fund</th><th>Shares</th><th>Avg cost</th><th>Price</th><th>Value</th><th>Gain/Loss</th></tr></thead><tbody>';
+    for(const s of rows){ const hd=PF.holdings[s], px=priceOf(s), val=hd.shares*px, g=val-hd.cost, avg=hd.cost/hd.shares;
+      h+=`<tr><td><b style="color:var(--cream)">${s}</b></td><td>${hd.shares.toFixed(3)}</td><td>${usd2(avg)}</td><td>${usd2(px)}</td><td>${usd0(val)}</td><td style="color:${g>=0?'#7bd88f':'#f0a8b8'}">${g>=0?'+':''}${usd0(g)}</td></tr>`; }
+    $('#pfHoldings').innerHTML=h+'</tbody>';
+  } else $('#pfHoldings').innerHTML='<tbody><tr><td style="text-align:center;color:var(--muted);padding:22px">No holdings yet. Go to <b>Markets</b> and buy your first ETF!</td></tr></tbody>';
+  // donut
+  const segs=rows.map(s=>({label:s,val:PF.holdings[s].shares*priceOf(s),color:ETF_META[s].color}));
+  segs.push({label:'Cash',val:PF.cash,color:'#5a5280'});
+  const dd={labels:segs.map(x=>x.label),datasets:[{data:segs.map(x=>x.val),backgroundColor:segs.map(x=>x.color),borderColor:'#1b1342',borderWidth:2}]};
+  const dopts={responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+usd0(c.parsed)}}}};
+  if(pfDonut){pfDonut.data=dd;pfDonut.update();} else pfDonut=new Chart($('#pfDonut'),{type:'doughnut',data:dd,options:dopts});
+  $('#pfDonutLegend').innerHTML=segs.map(x=>`<span><i class="dot" style="background:${x.color}"></i> ${x.label}</span>`).join('');
+  // tx
+  if(PF.tx.length){
+    let h='<thead><tr><th>When</th><th>Action</th><th>Fund</th><th>Shares</th><th>Amount</th></tr></thead><tbody>';
+    for(const t of PF.tx.slice().reverse().slice(0,40)) h+=`<tr><td>${new Date(t.ts).toLocaleDateString()}</td><td style="color:${t.type==='buy'?'#7bd88f':'#f0a8b8'}">${t.type==='buy'?'Bought':'Sold'}</td><td>${t.sym}</td><td>${(+t.shares).toFixed(3)}</td><td>${usd0(t.amt)}</td></tr>`;
+    $('#pfTx').innerHTML=h+'</tbody>';
+  } else $('#pfTx').innerHTML='<tbody><tr><td style="text-align:center;color:var(--muted);padding:18px">No trades yet.</td></tr></tbody>';
+}
+
+/* ----- TRADING (modal) ----- */
+let tmSym=null, tmChart=null, tmRange='1y';
+function openTrade(s){
+  tmSym=s; const m=ETF_META[s];
+  $('#tmName').textContent=s; $('#tmDesc').textContent=m.name+' · '+m.desc;
+  setSide('buy'); $('#tmAmt').value=100; $('#tmMsg').textContent='';
+  $('#tradeModal').classList.add('show');
+  updateTmPrice(); tmLoadChart('1y'); updateTmInfo();
+  loadQuotes(true).then(()=>{ updateTmPrice(); updateTmInfo(); });
+}
+function closeTrade(){ $('#tradeModal').classList.remove('show'); }
+function updateTmPrice(){ const p=PRICES[tmSym]||{}, chg=p.chg||0, up=chg>=0;
+  $('#tmPrice').textContent=p.price?usd2(p.price):usd2(FALLBACK_PX[tmSym]);
+  $('#tmChg').innerHTML=`<span class="${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(chg).toFixed(2)}% today</span>`+(p.live?'':' <span style="color:var(--muted)">· recent</span>'); }
+function setSide(k){ document.querySelectorAll('#tmSide button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+  $('#tmGo').textContent=(k==='buy'?'Buy ':'Sell ')+tmSym; updateTmInfo(); }
+function tmQuick(v){ $('#tmAmt').value=v; updateTmInfo(); }
+function tmMax(){ const side=document.querySelector('#tmSide .on').dataset.k;
+  if(side==='buy'){ $('#tmAmt').value=Math.floor(PF.cash); } else { const h=PF.holdings[tmSym]; $('#tmAmt').value=h?Math.floor(h.shares*priceOf(tmSym)):0; } updateTmInfo(); }
+function updateTmInfo(){ const side=document.querySelector('#tmSide .on').dataset.k, px=priceOf(tmSym), amt=+$('#tmAmt').value||0, sh=amt/px;
+  const h=PF.holdings[tmSym], own=h?h.shares:0;
+  $('#tmInfo').innerHTML = side==='buy'
+    ? `≈ <b style="color:var(--cream)">${sh.toFixed(3)}</b> shares · Cash available: ${usd0(PF.cash)}`
+    : `≈ <b style="color:var(--cream)">${sh.toFixed(3)}</b> shares · You own ${own.toFixed(3)} (${usd0(own*px)})`; }
+function tmLoadChart(range){ tmRange=range; document.querySelectorAll('#tmRange button').forEach(b=>b.classList.toggle('on',b.dataset.r===range));
+  fetch(MARKET_ENDPOINT+'?symbol='+tmSym+'&range='+range).then(r=>r.ok?r.json():null).then(d=>{
+    let closes,labels;
+    if(d&&d.closes&&d.closes.length){ closes=d.closes; labels=closes.map((_,i)=>i); if(d.price){PRICES[tmSym]=PRICES[tmSym]||{};PRICES[tmSym].price=d.price;PRICES[tmSym].chg=d.changePct;PRICES[tmSym].live=true;updateTmPrice();} }
+    else { closes=[priceOf(tmSym),priceOf(tmSym)]; labels=[0,1]; }
+    const up=closes[closes.length-1]>=closes[0];
+    const data={labels,datasets:[{data:closes,borderColor:up?'#7bd88f':'#f0a8b8',borderWidth:2.5,pointRadius:0,tension:.2,fill:true,backgroundColor:up?'rgba(123,216,143,.10)':'rgba(240,168,184,.10)'}]};
+    const opts={responsive:true,maintainAspectRatio:false,animation:{duration:reduceMotion?0:300},scales:{x:{display:false},y:{ticks:{callback:v=>'$'+Math.round(v)},grid:{color:'rgba(255,255,255,.06)'}}},plugins:{legend:{display:false},tooltip:{callbacks:{title:()=>'',label:c=>usd2(c.parsed.y)}}}};
+    if(tmChart){tmChart.data=data;tmChart.options=opts;tmChart.update();} else tmChart=new Chart($('#tmChart'),{type:'line',data,options:opts});
+  }).catch(()=>{});
+}
+function doTrade(){
+  const side=document.querySelector('#tmSide .on').dataset.k, px=priceOf(tmSym); let amt=+$('#tmAmt').value||0;
+  const msg=$('#tmMsg');
+  if(amt<=0){ msg.innerHTML='<span class="down">Enter an amount first.</span>'; return; }
+  if(side==='buy'){
+    if(amt>PF.cash+0.01){ msg.innerHTML='<span class="down">Not enough cash. Add virtual cash or lower the amount.</span>'; return; }
+    const sh=amt/px; PF.cash-=amt; const h=PF.holdings[tmSym]||{shares:0,cost:0}; h.shares+=sh; h.cost+=amt; PF.holdings[tmSym]=h;
+    PF.tx.push({type:'buy',sym:tmSym,shares:sh,amt,price:px,ts:Date.now()});
+    msg.innerHTML=`<span class="up">✓ Bought ${sh.toFixed(3)} ${tmSym} for ${usd0(amt)}</span>`; confettiBurst();
+  } else {
+    const h=PF.holdings[tmSym]; if(!h||h.shares<=0){ msg.innerHTML='<span class="down">You don\'t own any '+tmSym+' yet.</span>'; return; }
+    const maxVal=h.shares*px; if(amt>maxVal) amt=maxVal;
+    const sh=amt/px, frac=sh/h.shares; PF.cash+=amt; h.cost-=h.cost*frac; h.shares-=sh; if(h.shares<1e-6) delete PF.holdings[tmSym]; else PF.holdings[tmSym]=h;
+    PF.tx.push({type:'sell',sym:tmSym,shares:sh,amt,price:px,ts:Date.now()});
+    msg.innerHTML=`<span class="up">✓ Sold ${sh.toFixed(3)} ${tmSym} for ${usd0(amt)}</span>`;
+  }
+  savePF(); renderPortfolio(); updateTmInfo();
+  setTimeout(()=>{ closeTrade(); labTab('portfolio'); }, 950);
+}
+function openAddCash(){
+  const remaining=Math.max(0,CASH_CAP-PF.granted);
+  openModal('Add virtual cash 🪙', `<p style="color:var(--body)">You can hold up to <b>${usd0(CASH_CAP)}</b> in virtual cash. You can still add <b>${usd0(remaining)}</b>.</p>
+    <input type="number" id="addCashAmt" value="${Math.min(10000,remaining)}" min="0" max="${remaining}" style="width:100%;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:17px;margin:4px 0 10px">
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="btn btn-light" style="padding:7px 12px;font-size:13px" onclick="document.getElementById('addCashAmt').value=1000">+$1k</button>
+      <button class="btn btn-light" style="padding:7px 12px;font-size:13px" onclick="document.getElementById('addCashAmt').value=10000">+$10k</button>
+      <button class="btn btn-light" style="padding:7px 12px;font-size:13px" onclick="document.getElementById('addCashAmt').value=100000">+$100k</button>
+      <button class="btn btn-light" style="padding:7px 12px;font-size:13px" onclick="document.getElementById('addCashAmt').value=${remaining}">Max</button>
+    </div>
+    <button class="btn btn-sun" style="width:100%;justify-content:center" onclick="addCashConfirm()">Add cash</button>`);
+}
+function addCashConfirm(){
+  const remaining=Math.max(0,CASH_CAP-PF.granted); let a=clamp(+$('#addCashAmt').value,0,remaining);
+  PF.cash+=a; PF.granted+=a; savePF(); renderPortfolio(); closeModal(); if(a>0) confettiBurst();
+}
+function resetPortfolio(){
+  openModal('Reset your account?','<p style="color:var(--body)">This clears all virtual holdings and cash and starts you fresh at $10,000. This can\'t be undone.</p><div style="display:flex;gap:10px;margin-top:8px"><button class="btn btn-light" style="flex:1;justify-content:center" onclick="closeModal()">Keep it</button><button class="btn btn-sun" style="flex:1;justify-content:center" onclick="doReset()">Reset</button></div>');
+}
+function doReset(){ PF=newPF(); savePF(); renderPortfolio(); renderMarkets(); closeModal(); }
+
+/* ----- BACKTEST ----- */
+let btChart=null, btAlloc={SPY:100,VOO:0,QQQ:0,VGT:0,SMH:0};
+function buildAlloc(){
+  $('#btAlloc').innerHTML=ETFS.map(s=>`<div style="margin-bottom:10px"><label style="display:flex;justify-content:space-between;font-size:14px;color:var(--cream);font-family:Bricolage Grotesque;font-weight:600;margin-bottom:5px"><span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${ETF_META[s].color};margin-right:7px"></span>${s}</span><span class="val" id="al-${s}">${btAlloc[s]}%</span></label><input type="range" id="alr-${s}" min="0" max="100" step="5" value="${btAlloc[s]}"></div>`).join('');
+  ETFS.forEach(s=>{ const el=$('#alr-'+s); setFill(el); el.addEventListener('input',()=>{ btAlloc[s]=+el.value; $('#al-'+s).textContent=el.value+'%'; setFill(el); updateBtTotal(); }); });
+  updateBtTotal();
+}
+function updateBtTotal(){ const t=ETFS.reduce((a,s)=>a+btAlloc[s],0); const e=$('#btTotal'); e.textContent=t+'%'; e.style.color=(t===100)?'var(--gold)':'#f0a8b8'; }
+function btPreset(k){
+  if(k==='even') ETFS.forEach(s=>btAlloc[s]=20);
+  else { ETFS.forEach(s=>btAlloc[s]=0); btAlloc.SPY=100; }
+  ETFS.forEach(s=>{ const el=$('#alr-'+s); el.value=btAlloc[s]; $('#al-'+s).textContent=btAlloc[s]+'%'; setFill(el); }); updateBtTotal();
+}
+function btCompute(weights, mode, amount, startYear){
+  const yrs=LAB_YEARS.filter(y=>y>=startYear), months=yrs.length*12;
+  function sim(monthly,lump){
+    const sleeve={}; ETFS.forEach(s=>sleeve[s]=lump*weights[s]); let invested=lump;
+    const sumS=()=>ETFS.reduce((a,s)=>a+sleeve[s],0);
+    const series=[sumS()], inv=[invested], labels=[0]; let mi=0;
+    for(const y of yrs){ const idx=LAB_YEARS.indexOf(y); const mf={}; ETFS.forEach(s=>mf[s]=Math.pow(1+LAB_RET[s][idx]/100,1/12));
+      for(let m=0;m<12;m++){ if(monthly>0){ ETFS.forEach(s=>sleeve[s]+=monthly*weights[s]); invested+=monthly; } ETFS.forEach(s=>sleeve[s]*=mf[s]); mi++; series.push(sumS()); inv.push(invested); labels.push(mi/12); } }
+    return {series,inv,labels,invested,final:sumS()};
+  }
+  let primary,compare,total;
+  if(mode==='lump'){ total=amount; primary=sim(0,amount); compare=sim(amount/months,0); }
+  else { total=amount*months; primary=sim(amount,0); compare=sim(0,total); }
+  return {primary,compare,total,yrs,months,mode};
+}
+function runBacktest(){
+  const t=ETFS.reduce((a,s)=>a+btAlloc[s],0);
+  if(t<=0){ $('#btTake').innerHTML='<span class="down">Pick at least one ETF (your mix is 0%).</span>'; return; }
+  const weights={}; ETFS.forEach(s=>weights[s]=btAlloc[s]/t);
+  const mode=segVal('btMode','m'), amount=+$('#btAmt').value, startYear=+$('#btStart').value;
+  const R=btCompute(weights,mode,amount,startYear);
+  const endYear=LAB_YEARS[LAB_YEARS.length-1], yearsN=R.yrs.length;
+  const finalV=R.primary.final, invested=R.primary.invested, growth=finalV-invested, growthPct=invested>0?growth/invested*100:0;
+  countTo($('#btFinal'),finalV); countTo($('#btInvested'),invested);
+  $('#btMainLbl').textContent=(mode==='lump'?'Lump sum → final value':'Monthly DCA → final value');
+  $('#btFinalSub').textContent=`${mode==='lump'?usd0(amount)+' invested once':usd0(amount)+'/mo for '+yearsN+' yrs'}`;
+  $('#btGrowth').innerHTML=`<span style="color:${growth>=0?'#7bd88f':'#f0a8b8'}">${growth>=0?'+':''}${usd0(growth)} (${growthPct.toFixed(0)}%)</span> growth`;
+  const altFinal=R.compare.final, altName=(mode==='lump'?'investing that same total monthly (DCA)':'investing it all at once on day one (lump sum)');
+  const diff=finalV-altFinal;
+  $('#btTake').innerHTML=`Over <b>Jan ${startYear} → Dec ${endYear}</b> (${yearsN} years), your mix turned <b>${usd0(invested)}</b> into <b>${usd0(finalV)}</b>. `+
+    `${altName.charAt(0).toUpperCase()+altName.slice(1)} would have ended near <b>${usd0(altFinal)}</b> — ${Math.abs(diff)<finalV*0.01?'about the same':'a difference of about <b>'+usd0(Math.abs(diff))+'</b>'}. `+
+    `Lump sum usually wins when markets rise (money invested earlier has more time to grow), while DCA lowers the risk of buying right before a drop and is what most people actually do.`;
+  $('#btChartTitle').textContent='Portfolio value over time · '+(mode==='lump'?'Lump sum':'Monthly DCA');
+  const P=R.primary, C=R.compare;
+  const data={datasets:[
+    {label:'Invested',data:P.inv.map((v,i)=>({x:P.labels[i],y:v})),borderColor:'#8f86b5',backgroundColor:'rgba(143,134,181,.14)',fill:true,pointRadius:0,borderWidth:2,tension:.12},
+    {label:'Your mix',data:P.series.map((v,i)=>({x:P.labels[i],y:v})),borderColor:'#ecc868',backgroundColor:'rgba(236,200,104,.14)',fill:true,pointRadius:0,borderWidth:3,tension:.12},
+    {label:'Other approach',data:C.series.map((v,i)=>({x:C.labels[i],y:v})),borderColor:'#b49cff',borderDash:[6,4],pointRadius:0,borderWidth:2,tension:.12}]};
+  if(btChart){btChart.data=data;btChart.update();} else btChart=new Chart($('#btChart'),{type:'line',data,options:baseOpts('Years invested')});
+}
+
+/* ----- lab tabs + init ----- */
+let labInited=false;
+function labTab(name){
+  document.querySelectorAll('.lab-subtabs button').forEach(b=>b.classList.toggle('on',b.dataset.l===name));
+  document.querySelectorAll('#labBody .lpane').forEach(p=>p.classList.toggle('on', p.id==='lp-'+name));
+  if(name==='markets'){ loadQuotes().then(renderMarkets); renderMarkets(); }
+  if(name==='portfolio'){ loadQuotes().then(renderPortfolio); renderPortfolio(); }
+}
+async function initLab(){
+  if(!labInited){ labInited=true;
+    buildAlloc();
+    ['btAmt','btStart'].forEach(id=>{ const el=$('#'+id); setFill(el); el.addEventListener('input',()=>{ setFill(el);
+      if(id==='btAmt') $('#btAmtV').textContent=usd0(+el.value); else $('#btStartV').textContent=el.value; }); });
+    document.querySelectorAll('#btMode button').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('#btMode button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+      const m=b.dataset.m, amt=$('#btAmt');
+      if(m==='dca'){ amt.max=DCA_CAP; if(+amt.value>DCA_CAP) amt.value=500; $('#btAmtLbl').textContent='Monthly amount'; }
+      else { amt.max=CASH_CAP; $('#btAmtLbl').textContent='Lump amount'; }
+      $('#btAmtV').textContent=usd0(+amt.value); setFill(amt); }));
+    document.querySelectorAll('#tmSide button').forEach(b=>b.addEventListener('click',()=>setSide(b.dataset.k)));
+    document.querySelectorAll('#tmRange button').forEach(b=>b.addEventListener('click',()=>tmLoadChart(b.dataset.r)));
+    $('#tmAmt').addEventListener('input',updateTmInfo);
+  }
+  await loadPF();
+  await loadQuotes(true);
+  renderMarkets(); renderPortfolio();
+  labTab('markets');
+}
+
+/* ---------- finance tabs ---------- */
+let freeInit=false;
 function initFreeOnce(){
   if(freeInit) return; freeInit=true;
   ['cStart','cContrib','cRate','cYears'].forEach(id=>{setFill($('#'+id)); $('#'+id).addEventListener('input',drawCompound);});
@@ -901,18 +1216,11 @@ function initFreeOnce(){
   }));
   buildLearn(); if(!quizStarted) renderQuiz(); drawCompound();
 }
-function initLab(){
-  if(!labInit){ labInit=true;
-    ['lMonth','lStart'].forEach(id=>{setFill($('#'+id)); $('#'+id).addEventListener('input',drawLab);});
-    $('#lFund').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{$('#lFund').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawLab();}));
-  }
-  drawLab();
-}
 function finTab(name){
   document.querySelectorAll('.fin-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.f===name));
   document.querySelectorAll('#finance .ftool').forEach(t=>t.classList.toggle('on', t.id==='ft-'+name));
   if(name==='compound') drawCompound();
-  if(name==='lab'){ setupGoogle(); if(hubUnlocked){ $('#labGate').style.display='none'; $('#labBody').style.display='block'; initLab(); } }
+  if(name==='lab'){ setupGoogle(); if(hubUnlocked){ $('#labGate').style.display='none'; $('#labBody').style.display='block'; } }
 }
 
 /* ---------- confetti ---------- */
