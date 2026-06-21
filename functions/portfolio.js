@@ -1,8 +1,13 @@
 // functions/portfolio.js  —  Cloudflare Pages Function
-// Saves/loads each signed-in kid's virtual portfolio, keyed by their verified Google account.
-// Requires a KV namespace binding named PORTFOLIOS (see setup instructions).
-//   GET  /portfolio?credential=<google_id_token>           -> { portfolio: {...}|null }
-//   POST /portfolio  body: { credential, portfolio }        -> { ok: true }
+// Saves/loads each signed-in user's virtual portfolio.
+// Now accepts EITHER a Google id_token (a 3-part JWT) OR a session token issued by /auth:
+//   Google users    -> key  pf:<google_sub>
+//   Password users  -> key  pf:email:<emailLower>
+// The token may arrive as ?credential=<...>, body.credential, or Authorization: Bearer <token>.
+// The saved portfolio JSON shape is unchanged.
+// Requires a KV namespace binding named PORTFOLIOS.
+//   GET  /portfolio   (Bearer token or ?credential=)            -> { portfolio: {...}|null }
+//   POST /portfolio   body: { portfolio } (+ Bearer or credential) -> { ok: true }
 
 const FALLBACK_CLIENT_ID = '347224501690-l3u3m1photpe79gprq1939as322emjvl.apps.googleusercontent.com';
 
@@ -11,7 +16,7 @@ export async function onRequest(context) {
   const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 
   if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: { ...headers, 'Access-Control-Allow-Methods': 'GET,POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } });
+    return new Response(null, { headers: { ...headers, 'Access-Control-Allow-Methods': 'GET,POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
   }
 
   const KV = env.PORTFOLIOS;
@@ -24,14 +29,27 @@ export async function onRequest(context) {
     credential = body && body.credential;
   } else {
     credential = new URL(request.url).searchParams.get('credential');
+  }
+  // Authorization: Bearer <token> works for both GET and POST (used by password sessions,
+  // and also fine for Google tokens).
+  if (!credential) {
     const auth = request.headers.get('Authorization');
-    if (!credential && auth && auth.startsWith('Bearer ')) credential = auth.slice(7);
+    if (auth && auth.startsWith('Bearer ')) credential = auth.slice(7);
   }
   if (!credential) return json({ error: 'no credential' }, 401, headers);
 
-  const claims = await verifyGoogle(credential, clientId);
-  if (!claims) return json({ error: 'invalid token' }, 401, headers);
-  const key = 'pf:' + claims.sub;
+  // Decide auth type by token shape: a Google id_token is a 3-part JWT (has two dots);
+  // our session token is opaque hex (no dots). We must NOT use a long JWT as a KV key.
+  let key = null;
+  if (String(credential).split('.').length === 3) {
+    const claims = await verifyGoogle(credential, clientId);
+    if (!claims) return json({ error: 'invalid token' }, 401, headers);
+    key = 'pf:' + claims.sub;
+  } else {
+    const sess = await verifySession(KV, credential);
+    if (!sess) return json({ error: 'invalid token' }, 401, headers);
+    key = 'pf:email:' + String(sess.email).toLowerCase();
+  }
 
   if (request.method === 'GET') {
     const v = await KV.get(key);
@@ -57,6 +75,18 @@ async function verifyGoogle(idToken, clientId) {
     if (p.exp && (Date.now() / 1000) > Number(p.exp)) return null;
     if (!p.sub) return null;
     return p;
+  } catch (e) { return null; }
+}
+
+async function verifySession(KV, token) {
+  try {
+    if (!token || String(token).length > 200) return null;
+    const raw = await KV.get('sess:' + token);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || !s.email) return null;
+    if (s.exp && (Date.now() / 1000) > Number(s.exp)) return null;
+    return s;
   } catch (e) { return null; }
 }
 
