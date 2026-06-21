@@ -15,6 +15,15 @@ export async function onRequestGet(context) {
     'Cache-Control': 'public, max-age=60'
   };
   try {
+    // Annual calendar-year total returns for all ETFs (auto-updates as years complete)
+    if (url.searchParams.get('annual')) {
+      const out = {};
+      await Promise.all(ALLOWED.map(async sym => {
+        try { out[sym] = await annualReturns(sym); } catch (e) { out[sym] = {}; }
+      }));
+      return json({ annual: out, lastCompleteYear: new Date().getUTCFullYear() - 1, asOf: Date.now() }, 200,
+        { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=21600' });
+    }
     const single = url.searchParams.get('symbol');
     if (single) {
       const sym = single.toUpperCase();
@@ -78,6 +87,27 @@ async function fetchChart(sym, range, interval) {
   const changePct = prevClose ? Math.round(((price - prevClose) / prevClose) * 10000) / 100 : 0;
   const asOf = meta.regularMarketTime ? meta.regularMarketTime * 1000 : Date.now();
   return { symbol: sym, price, prevClose, changePct, closes, timestamps, asOf, currency: meta.currency || 'USD' };
+}
+
+async function annualReturns(sym) {
+  const u = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=max&interval=1mo`;
+  const r = await fetch(u, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BetterDailyLab/1.0)', 'Accept': 'application/json' }, cf: { cacheTtl: 21600, cacheEverything: true } });
+  if (!r.ok) throw new Error('upstream ' + r.status);
+  const j = await r.json();
+  const res = j && j.chart && j.chart.result && j.chart.result[0];
+  if (!res) throw new Error('no data');
+  const ts = res.timestamp || [];
+  const adj = (res.indicators && res.indicators.adjclose && res.indicators.adjclose[0] && res.indicators.adjclose[0].adjclose)
+    || (res.indicators && res.indicators.quote && res.indicators.quote[0] && res.indicators.quote[0].close) || [];
+  const yearEnd = {}; // calendar year -> last available (December) adjusted close
+  for (let i = 0; i < adj.length; i++) { if (adj[i] == null) continue; const y = new Date(ts[i] * 1000).getUTCFullYear(); yearEnd[y] = adj[i]; }
+  const cur = new Date().getUTCFullYear();
+  const out = {};
+  Object.keys(yearEnd).map(Number).sort((a, b) => a - b).forEach(y => {
+    if (y >= cur) return;                       // only fully complete calendar years
+    if (yearEnd[y - 1] != null) out[y] = Math.round((yearEnd[y] / yearEnd[y - 1] - 1) * 10000) / 100;
+  });
+  return out;
 }
 
 function round2(x) { return x == null ? null : Math.round(x * 100) / 100; }
