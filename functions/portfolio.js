@@ -59,7 +59,7 @@ export async function onRequest(context) {
     const pf = body && body.portfolio;
     if (pf == null) return json({ error: 'no portfolio' }, 400, headers);
     const str = JSON.stringify(pf);
-    if (str.length > 20000) return json({ error: 'too large' }, 413, headers);
+    if (str.length > 200000) return json({ error: 'too large' }, 413, headers);
     await KV.put(key, str);
     return json({ ok: true }, 200, headers);
   }
