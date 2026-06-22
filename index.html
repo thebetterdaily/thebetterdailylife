@@ -251,6 +251,22 @@
   .ctrl label .val{color:var(--gold); font-weight:700; font-variant-numeric:tabular-nums}
   .cinput{width:100%; padding:12px 14px; border-radius:12px; background:rgba(255,255,255,.05); border:1.5px solid var(--line); color:var(--cream); font-size:17px; font-family:"Bricolage Grotesque"; font-variant-numeric:tabular-nums; box-sizing:border-box}
   .cinput:focus{outline:none; border-color:var(--gold)}
+  .plan-lbl{display:block; font-family:"Bricolage Grotesque"; font-weight:600; color:var(--cream); font-size:14px; margin:14px 0 7px}
+  .plan-card{background:rgba(255,255,255,.03); border:1.5px solid var(--line); border-radius:18px; padding:18px 20px; margin:16px 0 4px}
+  .plan-head{display:flex; justify-content:space-between; align-items:center; font-family:"Bricolage Grotesque"; font-weight:700; color:var(--gold-bright); font-size:17px}
+  .plan-btns{display:flex; gap:6px}
+  .plan-sum{color:var(--body); font-size:15.5px; margin:10px 0 14px}
+  .plan-stat-row{display:flex; gap:22px; flex-wrap:wrap; margin-bottom:4px}
+  .plan-stat-row .rl{color:var(--muted); font-family:"Bricolage Grotesque"; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.05em}
+  .sv-sm{font-family:"Bricolage Grotesque"; font-weight:700; color:var(--cream); font-size:15px; margin-top:2px}
+  .plan-ran{margin:10px 0 0; color:#7bd88f; font-size:13.5px}
+  .plan-proj{margin-top:16px; border-top:1px solid var(--line); padding-top:14px}
+  .plan-proj-head{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px}
+  .plan-proj-head h4{margin:0; font-family:"Bricolage Grotesque"; font-size:15px; color:var(--cream)}
+  .plan-toggles{display:flex; gap:8px}
+  .seg.sm{display:inline-flex; gap:5px}
+  .seg.sm button{flex:0 0 auto; padding:5px 10px; font-size:12.5px; border-radius:9px; min-width:0}
+  .plan-proj-note{color:var(--body); font-size:13.5px; margin:10px 0 0; line-height:1.5}
   .seg{display:flex; gap:8px}
   .seg button{flex:1; background:rgba(255,255,255,.04); border:1.5px solid var(--line); border-radius:12px; padding:11px 8px; font-family:"Bricolage Grotesque"; font-weight:600; color:var(--ink2); cursor:pointer; transition:.15s; font-size:15px}
   .seg button .sub{display:block; font-size:11.5px; color:var(--muted); font-weight:500; font-family:"Inter"}
@@ -667,6 +683,7 @@
               <div class="pf-actions"><button class="btn btn-sun" onclick="openAddCash()">＋ Add virtual cash</button><button class="btn btn-light" onclick="resetPortfolio()">Reset</button></div>
             </div>
             <div class="pf-stats" id="pfStats"></div>
+            <div id="pfPlan"></div>
             <div id="pfBench" class="pf-bench"></div>
             <div class="tool" style="grid-template-columns:300px 1fr;align-items:start">
               <div class="chart-card"><h4>Allocation</h4><div class="chart-wrap" style="height:230px"><canvas id="pfDonut"></canvas></div><div class="legend" id="pfDonutLegend" style="justify-content:center"></div></div>
@@ -1308,13 +1325,26 @@ async function loadQuotes(force){
 const MAX_PROFILES=3;
 let STORE=null, PF=null, saveTimer=null;
 function clamp(v,a,b){ v=+v; if(!isFinite(v))v=a; return Math.max(a,Math.min(b,v)); }
-function newPF(){ return {cash:10000, granted:10000, holdings:{}, tx:[], watch:[], spyEq:{shares:0,invested:0}, updated:Date.now()}; }
-function newProfile(name){ return {name:name||'My Portfolio', pf:newPF()}; }
+function newPF(start){ const c=clamp(+start||0,0,CASH_CAP); return {cash:c, granted:c, holdings:{}, tx:[], watch:[], spyEq:{shares:0,invested:0}, plan:null, updated:Date.now()}; }
+function newProfile(name,start){ return {name:name||'My Portfolio', pf:newPF(start)}; }
+function cleanPlan(p){
+  if(!p||typeof p!=='object'||!ETFS.includes(p.sym)) return null;
+  const base=clamp(+p.base,0,DCA_CAP); if(!(base>0)) return null;
+  const freq=(p.freq==='monthly')?'monthly':'weekly';
+  const incTypes=['none','pct','amt'];
+  const inc=(p.inc&&incTypes.includes(p.inc.type))?{type:p.inc.type, value:clamp(+p.inc.value,0,1e6), every:(p.inc.every==='year'?'year':'month')}:{type:'none',value:0,every:'month'};
+  const now=Date.now();
+  return {on:p.on!==false, sym:p.sym, base, freq, inc,
+    created:isFinite(+p.created)?+p.created:now, next:isFinite(+p.next)?+p.next:now,
+    invested:Math.max(0,+p.invested||0), count:Math.max(0,Math.floor(+p.count||0)),
+    lastRun:isFinite(+p.lastRun)?+p.lastRun:0, paused:!!p.paused};
+}
 function cleanPF(d){
   const o=newPF(); if(!d) return o;
   o.cash=clamp(+d.cash,0,2e6); o.granted=clamp(+d.granted,0,2e6); o.holdings={}; o.tx=Array.isArray(d.tx)?d.tx.slice(-200):[];
   o.watch=Array.isArray(d.watch)?d.watch.filter(s=>ETFS.includes(s)):[];
   o.spyEq=(d.spyEq&&isFinite(+d.spyEq.shares))?{shares:Math.max(0,+d.spyEq.shares),invested:Math.max(0,+d.spyEq.invested||0)}:{shares:0,invested:0};
+  o.plan=cleanPlan(d.plan);
   ETFS.forEach(s=>{ const h=d.holdings&&d.holdings[s]; if(h&&+h.shares>0) o.holdings[s]={shares:+h.shares,cost:+h.cost||0}; });
   return o;
 }
@@ -1356,17 +1386,26 @@ function renderProfiles(){
   if(STORE.profiles.length>1) h+=`<button class="pf-mini" title="Delete this profile" onclick="deleteProfile()">🗑️</button>`;
   el.innerHTML=h;
 }
-function switchProfile(i){ if(!STORE||i<0||i>=STORE.profiles.length) return; STORE.active=i; setActivePF(); savePF(); renderProfiles(); renderMarkets(); renderPortfolio(); }
+function switchProfile(i){ if(!STORE||i<0||i>=STORE.profiles.length) return; STORE.active=i; setActivePF(); processAutoPlan(); savePF(); renderProfiles(); renderMarkets(); renderPortfolio(); }
 function addProfile(){
   if(STORE.profiles.length>=MAX_PROFILES) return;
-  openModal('New profile 🌱', `<p style="color:var(--body)">Name this portfolio — a kid's name, or a strategy to try. You can have up to ${MAX_PROFILES}, each with its own cash and holdings.</p>
-    <input type="text" id="profName" maxlength="24" placeholder="e.g. Aisha, or Tech bets" style="width:100%;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:16px;margin:4px 0 12px">
+  openModal('New profile 🌱', `<p style="color:var(--body)">Name this portfolio — a kid's name, or a strategy to try. Up to ${MAX_PROFILES}, each with its own cash and holdings.</p>
+    <input type="text" id="profName" maxlength="24" placeholder="e.g. Aisha, or Tech bets" style="width:100%;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:16px;margin:4px 0 6px">
+    <label class="plan-lbl" style="margin-top:8px">Starting virtual cash</label>
+    <input type="number" class="cinput" id="profCash" value="0" min="0" max="${CASH_CAP}" step="100">
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 14px">
+      <button class="btn btn-light" style="padding:6px 11px;font-size:12.5px" onclick="document.getElementById('profCash').value=0">$0</button>
+      <button class="btn btn-light" style="padding:6px 11px;font-size:12.5px" onclick="document.getElementById('profCash').value=1000">$1k</button>
+      <button class="btn btn-light" style="padding:6px 11px;font-size:12.5px" onclick="document.getElementById('profCash').value=10000">$10k</button>
+    </div>
+    <p style="color:var(--muted);font-size:12.5px;margin:-4px 0 12px">Start at $0 and fund it with “Add virtual cash” or a DCA plan — your call. Max ${usd0(CASH_CAP)}.</p>
     <button class="btn btn-sun" style="width:100%;justify-content:center" onclick="addProfileConfirm()">Create profile</button>`);
   setTimeout(()=>{ const i=$('#profName'); if(i) i.focus(); },60);
 }
 function addProfileConfirm(){
   const v=($('#profName').value||'').trim().slice(0,24)||('Portfolio '+(STORE.profiles.length+1));
-  STORE.profiles.push(newProfile(v)); STORE.active=STORE.profiles.length-1; setActivePF(); savePF(); closeModal(); renderProfiles(); renderMarkets(); renderPortfolio(); confettiBurst();
+  const c=clamp(+($('#profCash')?$('#profCash').value:0),0,CASH_CAP);
+  STORE.profiles.push(newProfile(v,c)); STORE.active=STORE.profiles.length-1; setActivePF(); savePF(); closeModal(); renderProfiles(); renderMarkets(); renderPortfolio(); confettiBurst();
 }
 function renameProfile(){
   openModal('Rename profile ✏️', `<input type="text" id="profRename" maxlength="24" value="${escapeHtml(STORE.profiles[STORE.active].name)}" style="width:100%;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:16px;margin:4px 0 12px">
@@ -1416,7 +1455,7 @@ function renderPortfolio(){
   const hv=holdingsValue(), cost=totalCostBasis(), total=PF.cash+hv;
   const gain=hv-cost, gainPct=cost>0?gain/cost*100:0;
   countTo($('#pfTotal'),total);
-  $('#pfGain').innerHTML = (cost>0? `<span class="${gain>=0?'up':'down'}">${gain>=0?'▲':'▼'} ${usd0(Math.abs(gain))} (${gainPct.toFixed(1)}%) on investments</span>` : '<span style="color:var(--muted)">Buy an ETF to start growing</span>');
+  $('#pfGain').innerHTML = (cost>0? `<span class="${gain>=0?'up':'down'}">${gain>=0?'▲':'▼'} ${usd0(Math.abs(gain))} (${gainPct.toFixed(1)}%) on investments</span>` : (PF.cash<=0? '<span style="color:var(--muted)">Add virtual cash to begin — then buy your first ETF</span>' : '<span style="color:var(--muted)">Buy an ETF to start growing</span>'));
   $('#pfStats').innerHTML=`
     <div class="stat"><div class="rl">Cash</div><div class="sv">${usd0(PF.cash)}</div></div>
     <div class="stat"><div class="rl">Invested value</div><div class="sv">${usd0(hv)}</div></div>
@@ -1454,6 +1493,7 @@ function renderPortfolio(){
     for(const t of PF.tx.slice().reverse().slice(0,40)) h+=`<tr><td>${new Date(t.ts).toLocaleDateString()}</td><td style="color:${t.type==='buy'?'#7bd88f':'#f0a8b8'}">${t.type==='buy'?'Bought':'Sold'}</td><td>${t.sym}</td><td>${(+t.shares).toFixed(3)}</td><td>${usd0(t.amt)}</td></tr>`;
     $('#pfTx').innerHTML=h+'</tbody>';
   } else $('#pfTx').innerHTML='<tbody><tr><td style="text-align:center;color:var(--muted);padding:18px">No trades yet.</td></tr></tbody>';
+  renderPlan();
 }
 
 /* ----- TRADING (modal) ----- */
@@ -1536,12 +1576,171 @@ function openAddCash(){
 }
 function addCashConfirm(){
   const remaining=Math.max(0,CASH_CAP-PF.granted); let a=clamp(+$('#addCashAmt').value,0,remaining);
-  PF.cash+=a; PF.granted+=a; savePF(); renderPortfolio(); closeModal(); if(a>0) confettiBurst();
+  PF.cash+=a; PF.granted+=a; processAutoPlan(); savePF(); renderPortfolio(); closeModal(); if(a>0) confettiBurst();
 }
 function resetPortfolio(){
-  openModal('Reset your account?','<p style="color:var(--body)">This clears all virtual holdings and cash and starts you fresh at $10,000. This can\'t be undone.</p><div style="display:flex;gap:10px;margin-top:8px"><button class="btn btn-light" style="flex:1;justify-content:center" onclick="closeModal()">Keep it</button><button class="btn btn-sun" style="flex:1;justify-content:center" onclick="doReset()">Reset</button></div>');
+  openModal('Reset your account?','<p style="color:var(--body)">This clears all virtual holdings, cash, and any auto-invest plan, and starts you fresh at <b>$0</b>. Add virtual cash whenever you like. This can\'t be undone.</p><div style="display:flex;gap:10px;margin-top:8px"><button class="btn btn-light" style="flex:1;justify-content:center" onclick="closeModal()">Keep it</button><button class="btn btn-sun" style="flex:1;justify-content:center" onclick="doReset()">Reset</button></div>');
 }
 function doReset(){ STORE.profiles[STORE.active].pf=newPF(); setActivePF(); savePF(); renderPortfolio(); renderMarkets(); closeModal(); }
+
+/* ----- AUTO-INVEST (DCA) PLAN ----- */
+let planChart=null, planHorizon=10, planRate=7, planLastRun={ran:0,paused:false};
+function startOfDay(ts){ const d=new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
+function monthsBetween(a,b){ const x=new Date(a),y=new Date(b); return (y.getFullYear()-x.getFullYear())*12+(y.getMonth()-x.getMonth()); }
+function planAmountAt(pl,ts){
+  const base=+pl.base||0, inc=pl.inc||{type:'none'};
+  if(inc.type==='none'||!+inc.value) return base;
+  let per=inc.every==='year'?Math.floor(monthsBetween(pl.created,ts)/12):monthsBetween(pl.created,ts);
+  if(per<0) per=0;
+  return inc.type==='pct'?base*Math.pow(1+(+inc.value)/100,per):base+(+inc.value)*per;
+}
+function advancePlanDate(pl){ const d=new Date(pl.next); if(pl.freq==='weekly') d.setDate(d.getDate()+7); else d.setMonth(d.getMonth()+1); pl.next=d.getTime(); }
+function processAutoPlan(){
+  planLastRun={ran:0,paused:false};
+  const pl=PF&&PF.plan; if(!pl||!pl.on) return planLastRun;
+  const now=Date.now(); let ran=0, paused=false, guard=0;
+  while(pl.next<=now && guard<600){
+    guard++;
+    const amt=Math.min(planAmountAt(pl,pl.next),DCA_CAP);
+    if(amt<=0){ advancePlanDate(pl); continue; }
+    if(PF.cash+0.01<amt){ paused=true; break; }
+    const px=priceOf(pl.sym), sh=amt/px, h=PF.holdings[pl.sym]||{shares:0,cost:0};
+    PF.cash-=amt; h.shares+=sh; h.cost+=amt; PF.holdings[pl.sym]=h;
+    PF.spyEq=PF.spyEq||{shares:0,invested:0}; const _sp=priceOf('SPY'); PF.spyEq.shares+=amt/_sp; PF.spyEq.invested+=amt;
+    PF.tx.push({type:'buy',sym:pl.sym,shares:sh,amt,price:px,ts:pl.next,auto:true});
+    pl.invested=(pl.invested||0)+amt; pl.count=(pl.count||0)+1; pl.lastRun=pl.next;
+    advancePlanDate(pl); ran++;
+  }
+  pl.paused=paused; planLastRun={ran,paused};
+  if(ran>0||paused) savePF();
+  return planLastRun;
+}
+function planMonthlyContrib(pl,ts){ let a=Math.min(planAmountAt(pl,ts),DCA_CAP); return pl.freq==='weekly'?a*52/12:a; }
+function projectPlan(pl){
+  const years=planHorizon, mf=Math.pow(1+planRate/100,1/12), months=years*12, now=Date.now();
+  let bal=holdingsValue(), invested=totalCostBasis();
+  const balSeries=[bal], invSeries=[invested];
+  for(let m=1;m<=months;m++){
+    const c=planMonthlyContrib(pl, now+m*2629800000);
+    bal=bal*mf+c; invested+=c;
+    balSeries.push(bal); invSeries.push(invested);
+  }
+  return {balSeries, invSeries, finalBal:bal, finalInv:invested, years};
+}
+function setPlanHorizon(y){ planHorizon=y; renderPlan(); }
+function setPlanRate(r){ planRate=r; renderPlan(); }
+function renderPlan(){
+  const el=$('#pfPlan'); if(!el) return;
+  const pl=PF&&PF.plan;
+  if(!pl){
+    if(planChart){ planChart.destroy(); planChart=null; }
+    el.innerHTML=`<div class="plan-card">
+      <div class="plan-head"><span>🔁 Automatic investing (DCA)</span></div>
+      <p style="color:var(--body);margin:8px 0 14px">Set a repeating buy — like $25 into VOO every week — and see a hypothetical projection of where it could grow. This is <b>dollar-cost averaging</b>: investing a fixed amount on a schedule, no matter the price.</p>
+      <button class="btn btn-sun" onclick="openPlanModal()">＋ Set up a plan</button>
+    </div>`;
+    return;
+  }
+  const cur=Math.min(planAmountAt(pl,Date.now()),DCA_CAP);
+  const incTxt=pl.inc.type==='pct'?' · stepping up 1%/month':pl.inc.type==='amt'?` · +${usd0(pl.inc.value)}/${pl.inc.every==='year'?'yr':'mo'}`:'';
+  const nextStr=new Date(pl.next).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'});
+  let status;
+  if(!pl.on) status='<span style="color:var(--muted)">Paused — press ▶ to resume</span>';
+  else if(pl.paused) status=`<span class="down">Out of cash — <a onclick="openAddCash()" style="color:var(--gold-bright);cursor:pointer;text-decoration:underline">add virtual cash</a> to continue (next: ${nextStr})</span>`;
+  else status=`Next buy: <b style="color:var(--cream)">${nextStr}</b>`;
+  const ranNote=(planLastRun.ran>0)?`<div class="plan-ran">✓ Made ${planLastRun.ran} automatic buy${planLastRun.ran>1?'s':''} since your last visit.</div>`:'';
+  const proj=projectPlan(pl);
+  el.innerHTML=`<div class="plan-card">
+    <div class="plan-head"><span>🔁 Automatic investing</span>
+      <span class="plan-btns">
+        <button class="pf-mini" title="Edit plan" onclick="openPlanModal()">✏️</button>
+        <button class="pf-mini" title="${pl.on?'Pause':'Resume'}" onclick="togglePausePlan()">${pl.on?'⏸':'▶'}</button>
+        <button class="pf-mini" title="Stop plan" onclick="stopPlan()">🗑️</button>
+      </span></div>
+    <div class="plan-sum">Investing <b style="color:var(--gold-bright)">${usd0(cur)}</b> ${pl.freq==='weekly'?'every week':'every month'} into <b style="color:var(--cream)">${pl.sym}</b>${incTxt}.</div>
+    <div class="plan-stat-row">
+      <div><div class="rl">Status</div><div class="sv-sm">${status}</div></div>
+      <div><div class="rl">Invested by plan</div><div class="sv-sm">${usd0(pl.invested||0)}</div></div>
+      <div><div class="rl">Auto buys</div><div class="sv-sm">${pl.count||0}</div></div>
+    </div>
+    ${ranNote}
+    <div class="plan-proj">
+      <div class="plan-proj-head"><h4>Hypothetical projection</h4>
+        <div class="plan-toggles">
+          <span class="seg sm" id="planYears">${[5,10,20,30].map(y=>`<button class="${planHorizon===y?'on':''}" onclick="setPlanHorizon(${y})">${y}y</button>`).join('')}</span>
+          <span class="seg sm" id="planRateSeg">${[4,7,10].map(r=>`<button class="${planRate===r?'on':''}" onclick="setPlanRate(${r})">${r}%</button>`).join('')}</span>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:185px"><canvas id="planProj"></canvas></div>
+      <div class="legend"><span><i class="dot" style="background:#8f86b5"></i> You put in</span><span><i class="dot" style="background:var(--gold)"></i> Projected value</span></div>
+      <p class="plan-proj-note">If markets average <b>${planRate}%/yr</b>, in <b>${proj.years} years</b> you'd put in about <b>${usd0(proj.finalInv)}</b> and it could be worth about <b style="color:var(--gold-bright)">${usd0(proj.finalBal)}</b>. Hypothetical only — real returns swing year to year and can be negative.</p>
+    </div>
+    <div class="note" style="margin-top:10px">Buys run <b>when you open the site</b> (there's no background server), at that day's price. Miss some days? Your next visit catches them up. Virtual money, for learning — not advice.</div>
+  </div>`;
+  const labels=proj.balSeries.map((_,i)=>i/12);
+  const data={datasets:[
+    {label:'You put in',data:proj.invSeries.map((v,i)=>({x:labels[i],y:v})),borderColor:'#8f86b5',backgroundColor:'rgba(143,134,181,.18)',fill:true,pointRadius:0,borderWidth:2,tension:.2},
+    {label:'Projected value',data:proj.balSeries.map((v,i)=>({x:labels[i],y:v})),borderColor:'#ecc868',backgroundColor:'rgba(236,200,104,.16)',fill:true,pointRadius:0,borderWidth:3,tension:.2}]};
+  if(planChart){ planChart.destroy(); planChart=null; }
+  const cv=$('#planProj'); if(cv) planChart=new Chart(cv,{type:'line',data,options:baseOpts('Years')});
+}
+function openPlanModal(){
+  const pl=PF.plan;
+  const sym=pl?pl.sym:'VOO', amount=pl?pl.base:25, freq=pl?pl.freq:'weekly';
+  const incType=pl?pl.inc.type:'none', incEvery=(pl&&pl.inc)?pl.inc.every:'month', incVal=(pl&&pl.inc&&pl.inc.type==='amt')?pl.inc.value:10;
+  openModal('Automatic investing 🔁', `
+    <p style="color:var(--body);margin-top:-4px">Pick a fund and an amount to invest on repeat — a hands-off way to practice <b>dollar-cost averaging</b>.</p>
+    <label class="plan-lbl">Fund</label>
+    <div class="seg seg-wrap" id="planSym">${ETFS.map(s=>`<button class="${s===sym?'on':''}" data-s="${s}">${s}</button>`).join('')}</div>
+    <label class="plan-lbl">Amount each time ($)</label>
+    <input type="number" class="cinput" id="planAmt" value="${amount}" min="1" max="${DCA_CAP}" step="5">
+    <label class="plan-lbl">How often</label>
+    <div class="seg" id="planFreq"><button class="${freq==='weekly'?'on':''}" data-f="weekly">Weekly</button><button class="${freq==='monthly'?'on':''}" data-f="monthly">Monthly</button></div>
+    <label class="plan-lbl">Step up over time (optional)</label>
+    <div class="seg seg-wrap" id="planInc">
+      <button class="${incType==='none'?'on':''}" data-i="none">No change</button>
+      <button class="${incType==='pct'?'on':''}" data-i="pct">+1% / month</button>
+      <button class="${incType==='amt'&&incEvery==='month'?'on':''}" data-i="amtM">+$ / month</button>
+      <button class="${incType==='amt'&&incEvery==='year'?'on':''}" data-i="amtY">+$ / year</button>
+    </div>
+    <div id="planIncAmtWrap" style="display:${incType==='amt'?'block':'none'}">
+      <label class="plan-lbl">Step-up amount ($)</label>
+      <input type="number" class="cinput" id="planIncAmt" value="${incVal}" min="1" max="10000" step="5">
+    </div>
+    <div class="note" style="margin-top:14px">Buys happen when you open the site (no background server), at that day's price. Each buy is capped at ${usd0(DCA_CAP)}, and you'll need enough virtual cash. For learning — not advice.</div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn btn-light" style="flex:1;justify-content:center" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-sun" style="flex:1;justify-content:center" onclick="savePlan()">${pl?'Save plan':'Start plan'}</button>
+    </div>`);
+  setTimeout(()=>{
+    document.querySelectorAll('#planSym button,#planFreq button').forEach(b=>b.addEventListener('click',function(){ this.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on')); this.classList.add('on'); }));
+    document.querySelectorAll('#planInc button').forEach(b=>b.addEventListener('click',function(){ this.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on')); this.classList.add('on'); const t=this.dataset.i; $('#planIncAmtWrap').style.display=(t==='amtM'||t==='amtY')?'block':'none'; }));
+  },50);
+}
+function savePlan(){
+  const symB=document.querySelector('#planSym .on'), sym=symB?symB.dataset.s:'VOO';
+  const amount=clamp(+$('#planAmt').value,1,DCA_CAP);
+  const freqB=document.querySelector('#planFreq .on'), freq=freqB?freqB.dataset.f:'weekly';
+  const incB=document.querySelector('#planInc .on'), incSel=incB?incB.dataset.i:'none';
+  let inc={type:'none',value:0,every:'month'};
+  if(incSel==='pct') inc={type:'pct',value:1,every:'month'};
+  else if(incSel==='amtM') inc={type:'amt',value:clamp(+$('#planIncAmt').value,1,10000),every:'month'};
+  else if(incSel==='amtY') inc={type:'amt',value:clamp(+$('#planIncAmt').value,1,10000),every:'year'};
+  const prev=PF.plan, today=startOfDay(Date.now());
+  PF.plan={on:true, sym, base:amount, freq, inc,
+    created:prev?prev.created:today, next:prev?prev.next:today,
+    invested:prev?prev.invested:0, count:prev?prev.count:0, lastRun:prev?prev.lastRun:0, paused:false};
+  closeModal();
+  const res=processAutoPlan();
+  savePF(); renderPortfolio();
+  if(res&&res.ran>0) confettiBurst();
+}
+function togglePausePlan(){ if(!PF.plan) return; PF.plan.on=!PF.plan.on; if(PF.plan.on){ processAutoPlan(); } savePF(); renderPortfolio(); }
+function stopPlan(){
+  openModal('Stop automatic investing?', `<p style="color:var(--body)">This stops future automatic buys. Everything you've already bought stays in your portfolio. You can start a new plan anytime.</p>
+    <div style="display:flex;gap:10px;margin-top:8px"><button class="btn btn-light" style="flex:1;justify-content:center" onclick="closeModal()">Keep plan</button><button class="btn btn-sun" style="flex:1;justify-content:center" onclick="confirmStopPlan()">Stop plan</button></div>`);
+}
+function confirmStopPlan(){ PF.plan=null; planLastRun={ran:0,paused:false}; savePF(); closeModal(); renderPortfolio(); }
 
 /* ----- BACKTEST ----- */
 let btChart=null, btAlloc={SPY:100,VOO:0,QQQ:0,VGT:0,SMH:0};
@@ -1629,6 +1828,7 @@ async function initLab(){
   await loadPF();
   renderProfiles();
   await loadQuotes(true);
+  processAutoPlan();
   loadAnnual();
   renderMarkets(); renderPortfolio();
   labTab('markets');
