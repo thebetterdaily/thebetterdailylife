@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>The Better Daily Life — get 1% better every day</title>
+<title>The Better Daily — get 1% better every day</title>
 <meta name="description" content="An initiative for getting better through continuous learning. A podcast, a newsletter, and free financial education for the next generation." />
-<meta property="og:title" content="The Better Daily Life" />
+<meta property="og:title" content="The Better Daily" />
 <meta property="og:description" content="Get 1% better every day. Podcast, newsletter, and free financial education." />
 <meta property="og:type" content="website" />
 
@@ -386,10 +386,10 @@
 <!-- ============ NAV ============ -->
 <header class="nav" id="nav">
   <div class="nav-in">
-    <button class="logo" onclick="go('home')" aria-label="The Better Daily Life — home">
-      <!-- SWAP FOR YOUR LOGO: to use your own image, upload it to the repo (e.g. logo.png) and replace this whole <svg>...</svg> with: <img src="logo.png" alt="The Better Daily Life"> -->
+    <button class="logo" onclick="go('home')" aria-label="The Better Daily — home">
+      <!-- SWAP FOR YOUR LOGO: to use your own image, upload it to the repo (e.g. logo.png) and replace this whole <svg>...</svg> with: <img src="logo.png" alt="The Better Daily"> -->
       <span class="brandmark" role="img" aria-label="The Better Daily logo"></span>
-      <span class="wm">The Better Daily Life<small>Continuous learning</small></span>
+      <span class="wm">The Better Daily<small>Continuous learning</small></span>
     </button>
     <button class="burger" id="burger" aria-label="Menu">☰</button>
     <nav class="navlinks" id="navlinks" aria-label="Primary">
@@ -413,7 +413,8 @@
       <div>
         <span class="eyebrow">An initiative for getting better</span>
         <h1>Get <span class="grad">1% better</span><br>every single day.</h1>
-        <p class="sub">The Better Daily Life is about the quiet power of continuous learning — small, steady improvements that compound into something remarkable. A podcast, a newsletter, and free financial education for the next generation.</p>
+        <p style="font-family:'Bricolage Grotesque',Inter,sans-serif;font-weight:700;font-size:22px;color:var(--gold-bright);margin:14px 0 0;letter-spacing:.2px">Small shifts. Big life.</p>
+        <p class="sub">The Better Daily is about the quiet power of continuous learning — small, steady improvements that compound into something remarkable. A podcast, a newsletter, and free financial education for the next generation.</p>
         <div class="cta-row">
           <button class="btn btn-sun" onclick="go('newsletter')">Join the newsletter</button>
           <button class="btn btn-ghost" onclick="go('podcast')">▸ Listen to the podcast</button>
@@ -628,6 +629,10 @@
               <input type="checkbox" id="newsOptIn" checked>
               <label for="newsOptIn">Email me <b>The Better Daily</b> newsletter — simple money &amp; learning ideas each week. Unsubscribe anytime.</label>
             </div>
+            <div class="consent">
+              <input type="checkbox" id="ageOptIn">
+              <label for="ageOptIn">I'm <b>18 or older</b>, or a parent/teacher setting this up for a child, and I agree to the <span class="ea-link" onclick="go('terms')">Terms</span> &amp; <span class="ea-link" onclick="go('privacy')">Privacy&nbsp;Policy</span>. This is <b>virtual money for learning</b>, not financial advice.</label>
+            </div>
             <div class="gate-fine">Signing in saves your portfolio so it's there on any device. We only use your email to sign you in and (if checked) send the newsletter.</div>
             <span class="preview-link" id="previewLink" onclick="unlockLab(true)">Just exploring? Preview the lab without signing in →</span>
           </div>
@@ -635,7 +640,7 @@
 
         <div id="labBody" style="display:none">
           <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
-            <div class="signed-bar" id="signedBar">✓ <span id="signedTxt">You're in</span> · <span style="cursor:pointer;text-decoration:underline" onclick="signOut()">sign out</span></div>
+            <div class="signed-bar" id="signedBar">✓ <span id="signedTxt">You're in</span> · <span style="cursor:pointer;text-decoration:underline" onclick="openAccount()">account</span> · <span style="cursor:pointer;text-decoration:underline" onclick="signOut()">sign out</span></div>
           </div>
           <div style="text-align:center;margin:8px 0 4px"><span style="font-size:12px;font-weight:700;color:var(--gold);background:rgba(236,200,104,.12);border:1px solid rgba(236,200,104,.32);padding:4px 13px;border-radius:999px">🪙 Virtual money — for learning, not real investing</span></div>
           <div id="pfSwitcher" class="pf-switch"></div>
@@ -728,7 +733,7 @@
     <div class="wrap narrow">
       <div class="sec-head reveal"><span class="eyebrow">About</span><h2>The whole idea, in one breath</h2></div>
       <p class="about-lead reveal">We believe the best life isn't built in a single dramatic move. It's built the way money grows — quietly, daily, and with patience. A little learning, repeated, becomes a lot.</p>
-      <p class="reveal" style="margin-top:22px">The Better Daily Life is an initiative to make continuous learning approachable for everyone. Through the podcast, we share honest conversations. Through the newsletter, we send small ideas worth keeping. And through free <button class="link" style="background:none;border:0;color:var(--green-d);font-weight:700;cursor:pointer;padding:0;font-size:inherit" onclick="go('finance')">financial education</button>, we give the next generation tools to understand money early — when time is most on their side.</p>
+      <p class="reveal" style="margin-top:22px">The Better Daily is an initiative to make continuous learning approachable for everyone. Through the podcast, we share honest conversations. Through the newsletter, we send small ideas worth keeping. And through free <button class="link" style="background:none;border:0;color:var(--green-d);font-weight:700;cursor:pointer;padding:0;font-size:inherit" onclick="go('finance')">financial education</button>, we give the next generation tools to understand money early — when time is most on their side.</p>
       <p class="reveal">No gimmicks. No hype. Just a steady invitation to get 1% better, today and tomorrow and the day after that.</p>
       <div class="band reveal" style="margin-top:36px; text-align:left">
         <div class="sun-glow" aria-hidden="true"></div>
@@ -742,6 +747,95 @@
     </div>
   </section>
 </section>
+
+<!-- ============ TERMS OF USE ============ -->
+<section class="page" id="terms">
+  <div style="max-width:760px;margin:0 auto;padding:96px 22px 64px;color:var(--body);line-height:1.65">
+    <button class="link" style="background:none;border:0;color:var(--gold);font-weight:700;cursor:pointer;padding:0;margin-bottom:18px;font-size:15px" onclick="go('home')">← Back to home</button>
+    <h1 style="color:var(--cream);font-size:34px;margin:0 0 6px">Terms of Use</h1>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 22px">Last updated: June 2026</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">1. Acceptance</h2>
+    <p>By using thebetterdailylife.com (the “Site”) or creating an account, you agree to these Terms of Use and our <span class="ea-link" onclick="go('privacy')">Privacy Policy</span>. If you do not agree, please do not use the Site.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">2. Who can use the Site and create an account</h2>
+    <p>The free learning tools (the compound calculator, lessons, and quiz) are open to everyone. Creating an account in the Virtual Investing Lab is intended only for people who are <b>18 or older</b>, or for a <b>parent, guardian, or teacher</b> who is setting up and supervising use on behalf of a child. By creating an account you confirm you meet one of these. The Site is not directed to children under 13, and we do not knowingly permit children under 13 to create accounts.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">3. Educational purpose — not financial advice</h2>
+    <p>Everything in the Virtual Investing Lab uses <b>virtual (pretend) money</b>. No real money, securities, or trades are involved. Figures are educational estimates and, where based on market data, may be delayed or inaccurate. Nothing on the Site is financial, investment, tax, or legal advice, and nothing is a recommendation to buy or sell any security. Investing involves risk, and past performance does not predict future results.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">4. Your account</h2>
+    <p>Keep your password confidential and do not share your account. You are responsible for activity under your account. Please tell us promptly if you believe your account has been used without your permission. You can change your password, export your data, or delete your account at any time from the “account” menu inside the Lab.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">5. Acceptable use</h2>
+    <p>Please do not misuse the Site: no attempting to break, overload, or gain unauthorized access to it; no scraping or automated data harvesting; and no using it for any unlawful purpose.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">6. Children’s privacy</h2>
+    <p>We do not knowingly collect personal information from children under 13. Where an account is set up by a parent, guardian, or teacher, that adult is responsible for supervising the child’s use. If you believe a child under 13 has provided us with personal information, please contact us and we will delete it. See our <span class="ea-link" onclick="go('privacy')">Privacy Policy</span> for more.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">7. Third-party services</h2>
+    <p>We use trusted providers to run the Site: Cloudflare (hosting and storage), Google (optional sign-in), Resend (account emails such as password resets), and Beehiiv (the optional newsletter). Your use of those features is also subject to those providers’ terms.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">8. Intellectual property</h2>
+    <p>The Site’s content, design, and code are owned by The Better Daily, LLC or its licensors and are provided for your personal, non-commercial use. Please do not copy or redistribute them without permission.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">9. Disclaimers</h2>
+    <p>The Site is provided “as is” and “as available,” without warranties of any kind, to the fullest extent permitted by law. We do not guarantee that the Site will be uninterrupted or error-free, or that any market data shown will be accurate or timely.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">10. Limitation of liability</h2>
+    <p>To the fullest extent permitted by law, The Better Daily, LLC will not be liable for any indirect, incidental, or consequential damages, or for decisions you make based on the Site. Because the Lab uses only virtual money, it cannot itself cause real financial loss.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">11. Changes</h2>
+    <p>We may update these Terms from time to time. Material changes will be reflected in the “Last updated” date above. Your continued use of the Site after changes take effect means you accept the updated Terms.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">12. Governing law</h2>
+    <p>These Terms are governed by the laws of the State of Wisconsin, USA, without regard to its conflict-of-laws rules. You and we agree that the state and federal courts located in Wisconsin will have exclusive jurisdiction over any dispute arising from these Terms or the Site.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">13. Contact</h2>
+    <p>Questions about these Terms? Email <a href="mailto:thebetterdaily1@gmail.com" style="color:var(--gold)">thebetterdaily1@gmail.com</a>.</p>
+  </div>
+</section>
+
+<!-- ============ PRIVACY POLICY ============ -->
+<section class="page" id="privacy">
+  <div style="max-width:760px;margin:0 auto;padding:96px 22px 64px;color:var(--body);line-height:1.65">
+    <button class="link" style="background:none;border:0;color:var(--gold);font-weight:700;cursor:pointer;padding:0;margin-bottom:18px;font-size:15px" onclick="go('home')">← Back to home</button>
+    <h1 style="color:var(--cream);font-size:34px;margin:0 0 6px">Privacy Policy</h1>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 22px">Last updated: June 2026</p>
+
+    <p>This policy explains what information The Better Daily, LLC (“we”) collects through thebetterdailylife.com, why, and the choices you have. The free learning tools work without an account; the items below mostly apply when you create an account or join the newsletter.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">1. What we collect</h2>
+    <p>If you create an email account: your <b>email address</b> and your <b>password</b> (stored only as a salted, hashed value — we never store or see your actual password). If you sign in with Google: a Google account identifier and your email, provided by Google. For all signed-in users: the <b>virtual portfolio</b> you build (holdings, trades, watchlist — all pretend money). If you opt in: your email is added to our newsletter. Our host (Cloudflare) also processes standard technical data such as IP address for security and reliability.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">2. How we use it</h2>
+    <p>To sign you in and save your virtual portfolio across devices; to send you account emails such as password-reset links; to send the newsletter if you opted in; and to keep the Site secure and working. We do <b>not</b> sell your personal information, and we do not show third-party ads.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">3. Legal basis (EU/UK)</h2>
+    <p>Where the GDPR or UK GDPR applies, we process your account data to provide the service you requested, and we send the newsletter on the basis of your consent (which you can withdraw at any time using the unsubscribe link in any newsletter email).</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">4. Who processes your data</h2>
+    <p>We share data only with the service providers that run the Site: <b>Cloudflare</b> (hosting and storage), <b>Google</b> (optional sign-in), <b>Resend</b> (transactional emails), and <b>Beehiiv</b> (the newsletter). These providers process data on our behalf under their own terms and security commitments.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">5. Children’s privacy</h2>
+    <p>The Site is not directed to children under 13, and we do not knowingly collect personal information from them. Accounts are intended for adults, or for a parent, guardian, or teacher acting for a child. If you believe a child under 13 has given us personal information, contact us and we will delete it.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">6. Keeping and deleting your data</h2>
+    <p>We keep your account data until you delete it. You can <b>export</b> your data or <b>delete your account and saved portfolios</b> at any time from the “account” menu inside the Lab. The newsletter is managed separately — unsubscribe from the footer of any newsletter email.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">7. Your rights</h2>
+    <p>You can access, export, correct, or delete your data. Depending on where you live (for example, the EU/UK or California), you may have additional rights, including the right to object to certain processing and to lodge a complaint with your local data-protection authority. To make a request, email us at the address below.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">8. International data transfers</h2>
+    <p>Our providers may store and process data in the United States and other countries. Where data is transferred internationally, our providers apply recognized safeguards (such as standard contractual clauses) under their terms.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">9. Security</h2>
+    <p>We protect data with measures including salted password hashing, encrypted storage of secret keys, and encrypted (HTTPS) connections. No method of transmission or storage is 100% secure, but we work to protect your information.</p>
+
+    <h2 style="color:var(--cream);font-size:20px;margin:24px 0 6px">10. Changes &amp; contact</h2>
+    <p>We may update this policy; the “Last updated” date above shows when. Questions or requests? Email <a href="mailto:thebetterdaily1@gmail.com" style="color:var(--gold)">thebetterdaily1@gmail.com</a>.</p>
+  </div>
+</section>
 </main>
 
 <!-- ============ FOOTER ============ -->
@@ -751,9 +845,10 @@
       <div>
         <div class="logo foot-logo" style="margin-bottom:12px">
           <span class="brandmark" role="img" aria-label="The Better Daily logo"></span>
-          <span class="wm">The Better Daily Life</span>
+          <span class="wm">The Better Daily</span>
         </div>
-        <p style="font-size:14px; color:var(--muted); max-width:24em">Get 1% better every day, through continuous learning.</p>
+        <p style="font-size:15px; color:var(--gold-bright); max-width:24em; font-weight:600">Small shifts. Big life.</p>
+        <p style="font-size:14px; color:var(--muted); max-width:24em; margin-top:4px">Get 1% better every day, through continuous learning.</p>
       </div>
       <div>
         <h5>Explore</h5>
@@ -761,6 +856,8 @@
         <button class="flink" onclick="go('newsletter')">Newsletter</button>
         <button class="flink" onclick="go('finance')">Financial Education</button>
         <button class="flink" onclick="go('about')">About</button>
+        <button class="flink" onclick="go('terms')">Terms of Use</button>
+        <button class="flink" onclick="go('privacy')">Privacy Policy</button>
       </div>
       <div>
         <h5>Connect</h5>
@@ -768,7 +865,7 @@
         <a href="https://thebetterdailypodcast.buzzsprout.com" target="_blank" rel="noopener">Podcast on Buzzsprout</a>
       </div>
     </div>
-    <p class="disc">All figures in the Financial Education hub are <b>educational estimates using virtual money</b> and assume steady average returns to show how compounding works. Real investments such as VOO and QQQ rise and fall, can lose value, and past performance does not predict future results. This site is for learning only and is <b>not financial advice</b>. © <span id="yr"></span> The Better Daily Life.</p>
+    <p class="disc">All figures in the Financial Education hub are <b>educational estimates using virtual money</b> and assume steady average returns to show how compounding works. Real investments such as VOO and QQQ rise and fall, can lose value, and past performance does not predict future results. This site is for learning only and is <b>not financial advice</b>. © <span id="yr"></span> The Better Daily, LLC.</p>
   </div>
 </footer>
 
@@ -950,6 +1047,10 @@ function setupGoogle(){
   }
 }
 function onGoogleCredential(resp){
+  if(!($('#ageOptIn') && $('#ageOptIn').checked)){
+    openModal('One quick step', 'Please tick the box just above the buttons confirming you’re <b>18 or older, or a parent/teacher</b> (and that you agree to the Terms &amp; Privacy Policy), then continue with Google again.');
+    return;
+  }
   cred=resp.credential;
   const data=decodeJwt(cred); userName=data&&data.given_name?data.given_name:'';
   if($('#newsOptIn').checked){
@@ -998,7 +1099,8 @@ function eaErr(code){ return ({
   invalid_password:'Please enter a password.',
   wrong_password:'Current password is incorrect.',
   invalid_or_expired:'That reset link has expired — request a new one.',
-  not_authenticated:'Please sign in again.'
+  not_authenticated:'Please sign in again.',
+  adult_required:'Please confirm you’re 18+ or a parent/teacher to continue.'
 }[code]||'Something went wrong — please try again.'); }
 function eaMsg(t,ok){ const m=$('#eaMsg'); if(m){ m.textContent=t||''; m.style.color=ok?'var(--gold-bright)':'#f0a8b8'; } }
 function nameFromEmail(e){ return (e||'').split('@')[0] || ''; }
@@ -1011,8 +1113,10 @@ function startSession(token,email){
 async function emailSignup(){
   const email=($('#eaEmail').value||'').trim(), pass=$('#eaPass').value||'';
   const news=$('#newsOptIn')?$('#newsOptIn').checked:false;
+  const adult=$('#ageOptIn')?$('#ageOptIn').checked:false;
+  if(!adult){ eaMsg('Please tick the box confirming you’re 18+ or a parent/teacher.'); return; }
   eaMsg('Creating your account…',true);
-  try{ const d=await authPost('signup',{email,password:pass,newsletter:news}); startSession(d.token,d.email); }
+  try{ const d=await authPost('signup',{email,password:pass,newsletter:news,adult:true}); startSession(d.token,d.email); }
   catch(e){ eaMsg(eaErr(e.message)); }
 }
 async function emailLogin(){
@@ -1055,6 +1159,77 @@ async function resetConfirm(token){
     const d=await authPost('reset-confirm',{token,newPassword:np});
     bdlClearResetUrl(); closeModal(); finTab('lab'); startSession(d.token,d.email); confettiBurst();
   }catch(e){ if(m) m.textContent=eaErr(e.message); }
+}
+
+/* ============================================================
+   ACCOUNT & DATA — manage, export, delete (privacy / data-rights)
+   ============================================================ */
+function isGoogleUser(){ return cred && String(cred).split('.').length===3; }
+function isPasswordUser(){ return cred && !isGoogleUser(); }
+function acctMsg(t,bad){ const m=$('#acctMsg'); if(m){ m.textContent=t||''; m.style.color=bad?'#f0a8b8':'var(--gold-bright)'; } }
+
+function openAccount(){
+  const pw=isPasswordUser();
+  openModal('Your account', `
+    <p style="color:var(--body);margin:0 0 14px">${pw?('Signed in as <b>'+escapeHtml(bdlGetEmail()||'')+'</b>.'):'Signed in with Google.'}</p>
+    ${pw?`<button class="btn btn-light" style="width:100%;justify-content:center;margin-bottom:10px" onclick="acctChangePassword()">Change password</button>`:''}
+    <button class="btn btn-light" style="width:100%;justify-content:center;margin-bottom:10px" onclick="downloadMyData()">Download my data</button>
+    <button class="btn btn-light" style="width:100%;justify-content:center;border-color:rgba(240,168,184,.5);color:#f0a8b8" onclick="confirmDelete()">Delete my account &amp; data</button>
+    <div id="acctMsg" style="font-size:13px;text-align:center;min-height:16px;margin-top:10px;color:var(--gold-bright)"></div>`);
+}
+
+function acctChangePassword(){
+  openModal('Change password 🔑', `
+    <input type="password" id="cpOld" placeholder="Current password" autocomplete="current-password" style="width:100%;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:16px;margin:2px 0 10px;box-sizing:border-box">
+    <input type="password" id="cpNew" placeholder="New password (8+ characters)" autocomplete="new-password" style="width:100%;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--cream);font-size:16px;margin:0 0 8px;box-sizing:border-box">
+    <div id="cpMsg" style="font-size:13px;color:#f0a8b8;min-height:16px;margin-bottom:8px"></div>
+    <button class="btn btn-sun" style="width:100%;justify-content:center" onclick="doChangePassword()">Update password</button>`);
+}
+async function doChangePassword(){
+  const oldP=$('#cpOld')?$('#cpOld').value:'', newP=$('#cpNew')?$('#cpNew').value:''; const m=$('#cpMsg');
+  if((newP||'').length<8){ if(m) m.textContent='New password must be at least 8 characters.'; return; }
+  try{
+    const d=await authPost('change-password',{oldPassword:oldP,newPassword:newP}, bdlGetToken());
+    if(d.token){ bdlSaveSession(d.token, bdlGetEmail()); cred=d.token; } // old sessions revoked; keep this device signed in
+    closeModal();
+  }catch(e){ if(m) m.textContent=eaErr(e.message); }
+}
+
+async function downloadMyData(){
+  acctMsg('Preparing your data…');
+  try{
+    let data;
+    if(isPasswordUser()){ const d=await authPost('export-data',{}, bdlGetToken()); data=d.data; }
+    else { data={ account:{ signin:'google' }, portfolio: STORE }; }
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download='the-better-daily-life-my-data.json'; document.body.appendChild(a); a.click();
+    a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+    acctMsg('Downloaded ✓');
+  }catch(e){ acctMsg('Could not export right now — please try again.',true); }
+}
+
+function confirmDelete(){
+  openModal('Delete your account?', `
+    <p style="color:var(--body);margin:0 0 12px">This permanently deletes your account and all saved portfolios. This <b>can’t be undone</b>.</p>
+    <div id="delMsg" style="font-size:13px;color:#f0a8b8;min-height:16px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-light" style="flex:1;justify-content:center" onclick="openAccount()">Keep my account</button>
+      <button class="btn btn-sun" style="flex:1;justify-content:center" onclick="doDeleteAccount()">Delete everything</button>
+    </div>`);
+}
+async function doDeleteAccount(){
+  const m=$('#delMsg'); const wasPw=isPasswordUser();
+  try{
+    if(wasPw){ await authPost('delete-account',{}, bdlGetToken()); }
+    else if(cred){ await fetch(PORTFOLIO_ENDPOINT,{method:'DELETE',headers:{'Authorization':'Bearer '+cred}}).catch(()=>{}); }
+    bdlClear(); cred=null; hubUnlocked=false;
+    try{ localStorage.removeItem('pf_local'); }catch(e){}
+    if(isConfigured && window.google && google.accounts){ try{ google.accounts.id.disableAutoSelect(); }catch(e){} }
+    $('#labBody').style.display='none'; $('#labGate').style.display='block'; $('#signedBar').classList.remove('show');
+    closeModal();
+    openModal('Account deleted', 'Your account and saved data have been removed.' + (wasPw?' If you subscribed to the newsletter, you can unsubscribe from the footer of any newsletter email.':''));
+  }catch(e){ if(m) m.textContent='Could not delete right now — please try again.'; }
 }
 
 /* ============================================================
