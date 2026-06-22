@@ -249,6 +249,8 @@
   .ctrl{margin-bottom:18px}
   .ctrl label{display:flex; justify-content:space-between; align-items:baseline; font-family:"Bricolage Grotesque"; font-weight:600; color:var(--cream); margin-bottom:8px; font-size:15px}
   .ctrl label .val{color:var(--gold); font-weight:700; font-variant-numeric:tabular-nums}
+  .cinput{width:100%; padding:12px 14px; border-radius:12px; background:rgba(255,255,255,.05); border:1.5px solid var(--line); color:var(--cream); font-size:17px; font-family:"Bricolage Grotesque"; font-variant-numeric:tabular-nums; box-sizing:border-box}
+  .cinput:focus{outline:none; border-color:var(--gold)}
   .seg{display:flex; gap:8px}
   .seg button{flex:1; background:rgba(255,255,255,.04); border:1.5px solid var(--line); border-radius:12px; padding:11px 8px; font-family:"Bricolage Grotesque"; font-weight:600; color:var(--ink2); cursor:pointer; transition:.15s; font-size:15px}
   .seg button .sub{display:block; font-size:11.5px; color:var(--muted); font-weight:500; font-family:"Inter"}
@@ -565,16 +567,16 @@
         <div class="sec-head center" style="margin-bottom:26px"><h2 style="font-size:30px">Compound Interest Calculator</h2><p>Free and open to everyone. See how savings grow when your interest starts earning its own interest.</p></div>
         <div class="tool">
           <div class="panel-card">
-            <div class="ctrl"><label>Starting amount <span class="val" id="cStartV">$1,000</span></label><input type="range" id="cStart" min="0" max="50000" step="100" value="1000"></div>
-            <div class="ctrl"><label>Contribution <span class="val" id="cContribV">$200</span></label><input type="range" id="cContrib" min="0" max="2000" step="10" value="200"></div>
+            <div class="ctrl"><label>Initial investment ($)</label><input type="number" class="cinput" id="cStart" min="0" step="100" value="1000" inputmode="decimal"></div>
+            <div class="ctrl"><label>Contribution ($)</label><input type="number" class="cinput" id="cContrib" min="0" step="10" value="100" inputmode="decimal"></div>
             <div class="ctrl"><label style="margin-bottom:9px">How often you add it</label>
               <div class="seg" id="cFreq"><button class="on" data-f="monthly">Monthly</button><button data-f="yearly">Yearly</button></div></div>
             <div class="ctrl"><label style="margin-bottom:9px">Added at the…</label>
               <div class="seg" id="cTiming"><button class="on" data-t="end">End of period</button><button data-t="start">Start of period</button></div></div>
-            <div class="ctrl"><label>Interest rate / year <span class="val" id="cRateV">7%</span></label><input type="range" id="cRate" min="0" max="20" step="0.25" value="7"></div>
+            <div class="ctrl"><label>Estimated interest rate (% / year)</label><input type="number" class="cinput" id="cRate" min="0" max="100" step="0.1" value="6" inputmode="decimal"></div>
             <div class="ctrl"><label style="margin-bottom:9px">Compounding</label>
-              <div class="seg seg-wrap" id="cComp"><button data-n="1">Yearly</button><button data-n="4">Quarterly</button><button class="on" data-n="12">Monthly</button><button data-n="365">Daily</button></div></div>
-            <div class="ctrl"><label>Number of years <span class="val" id="cYearsV">20</span></label><input type="range" id="cYears" min="1" max="50" step="1" value="20"></div>
+              <div class="seg seg-wrap" id="cComp"><button class="on" data-n="1">Yearly</button><button data-n="2">Semiannually</button><button data-n="4">Quarterly</button><button data-n="12">Monthly</button><button data-n="365">Daily</button></div></div>
+            <div class="ctrl"><label>Length (years)</label><input type="number" class="cinput" id="cYears" min="1" max="100" step="1" value="10"></div>
           </div>
           <div>
             <div class="res-banner res">
@@ -964,10 +966,11 @@ function compoundSim(P, contrib, freq, timing, ratePct, compN, years){
 let cChart;
 function drawCompound(){
   if(!$('#cStart')) return;
-  const P=+$('#cStart').value, contrib=+$('#cContrib').value, years=+$('#cYears').value, rate=+$('#cRate').value;
-  const freq=segVal('cFreq','f'), timing=segVal('cTiming','t'), compN=+segVal('cComp','n');
-  $('#cStartV').textContent=usd0(P); $('#cContribV').textContent=usd0(contrib); $('#cRateV').textContent=rate+'%'; $('#cYearsV').textContent=years;
-  ['cStart','cContrib','cRate','cYears'].forEach(id=>setFill($('#'+id)));
+  let P=parseFloat($('#cStart').value); if(!isFinite(P)||P<0) P=0;
+  let contrib=parseFloat($('#cContrib').value); if(!isFinite(contrib)||contrib<0) contrib=0;
+  let years=parseInt($('#cYears').value,10); if(!isFinite(years)||years<1) years=1; if(years>100) years=100;
+  let rate=parseFloat($('#cRate').value); if(!isFinite(rate)||rate<0) rate=0; if(rate>100) rate=100;
+  const freq=segVal('cFreq','f'), timing=segVal('cTiming','t'), compN=+segVal('cComp','n')||1;
   const r=compoundSim(P,contrib,freq,timing,rate,compN,years);
   countTo($('#cFV'),r.bal); countTo($('#cPaid'),r.contributed); countTo($('#cInt'),Math.max(0,r.interest));
   const labels=r.balSeries.map((_,i)=>i/12);
@@ -1454,9 +1457,9 @@ function renderPortfolio(){
 }
 
 /* ----- TRADING (modal) ----- */
-let tmSym=null, tmChart=null, tmRange='1y';
+let tmSym=null, tmChart=null, tmRange='1y', tmCloses=[];
 function openTrade(s){
-  tmSym=s; const m=ETF_META[s];
+  tmSym=s; tmRange='1y'; tmCloses=[]; const m=ETF_META[s];
   $('#tmName').textContent=s; $('#tmDesc').textContent=m.name+' · '+m.desc;
   setSide('buy'); $('#tmAmt').value=100; $('#tmMsg').textContent='';
   $('#tradeModal').classList.add('show');
@@ -1464,9 +1467,18 @@ function openTrade(s){
   loadQuotes(true).then(()=>{ updateTmPrice(); updateTmInfo(); });
 }
 function closeTrade(){ $('#tradeModal').classList.remove('show'); }
-function updateTmPrice(){ const p=PRICES[tmSym]||{}, chg=p.chg||0, up=chg>=0;
+function updateTmPrice(){ const p=PRICES[tmSym]||{};
   $('#tmPrice').textContent=p.price?usd2(p.price):usd2(FALLBACK_PX[tmSym]);
-  $('#tmChg').innerHTML=`<span class="${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(chg).toFixed(2)}% today</span>`+(p.live?'':' <span style="color:var(--muted)">· recent</span>'); }
+  renderTmChange(); }
+const TM_RANGE_LABEL={ '1d':'today','1mo':'past month','6mo':'past 6 months','1y':'past year','5y':'past 5 years' };
+function renderTmChange(){
+  const p=PRICES[tmSym]||{}, lab=TM_RANGE_LABEL[tmRange]||'';
+  let pct;
+  if(tmRange==='1d'){ pct=p.chg||0; }
+  else if(tmCloses.length>1){ pct=(tmCloses[tmCloses.length-1]/tmCloses[0]-1)*100; }
+  else { pct=p.chg||0; }
+  const up=pct>=0;
+  $('#tmChg').innerHTML=`<span class="${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(pct).toFixed(2)}% ${lab}</span>`+(p.live?'':' <span style="color:var(--muted)">· recent</span>'); }
 function setSide(k){ document.querySelectorAll('#tmSide button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
   $('#tmGo').textContent=(k==='buy'?'Buy ':'Sell ')+tmSym; updateTmInfo(); }
 function tmQuick(v){ $('#tmAmt').value=v; updateTmInfo(); }
@@ -1478,10 +1490,11 @@ function updateTmInfo(){ const side=document.querySelector('#tmSide .on').datase
     ? `≈ <b style="color:var(--cream)">${sh.toFixed(3)}</b> shares · Cash available: ${usd0(PF.cash)}`
     : `≈ <b style="color:var(--cream)">${sh.toFixed(3)}</b> shares · You own ${own.toFixed(3)} (${usd0(own*px)})`; }
 function tmLoadChart(range){ tmRange=range; document.querySelectorAll('#tmRange button').forEach(b=>b.classList.toggle('on',b.dataset.r===range));
+  renderTmChange();
   fetch(MARKET_ENDPOINT+'?symbol='+tmSym+'&range='+range).then(r=>r.ok?r.json():null).then(d=>{
     let closes,labels;
-    if(d&&d.closes&&d.closes.length){ closes=d.closes; labels=closes.map((_,i)=>i); if(d.price){PRICES[tmSym]=PRICES[tmSym]||{};PRICES[tmSym].price=d.price;PRICES[tmSym].chg=d.changePct;PRICES[tmSym].live=true;updateTmPrice();} }
-    else { closes=[priceOf(tmSym),priceOf(tmSym)]; labels=[0,1]; }
+    if(d&&d.closes&&d.closes.length){ closes=d.closes; labels=closes.map((_,i)=>i); tmCloses=closes.slice(); if(d.price){PRICES[tmSym]=PRICES[tmSym]||{};PRICES[tmSym].price=d.price;PRICES[tmSym].chg=d.changePct;PRICES[tmSym].live=true;} updateTmPrice(); }
+    else { closes=[priceOf(tmSym),priceOf(tmSym)]; labels=[0,1]; tmCloses=closes.slice(); renderTmChange(); }
     const up=closes[closes.length-1]>=closes[0];
     const data={labels,datasets:[{data:closes,borderColor:up?'#7bd88f':'#f0a8b8',borderWidth:2.5,pointRadius:0,tension:.2,fill:true,backgroundColor:up?'rgba(123,216,143,.10)':'rgba(240,168,184,.10)'}]};
     const opts={responsive:true,maintainAspectRatio:false,animation:{duration:reduceMotion?0:300},scales:{x:{display:false},y:{ticks:{callback:v=>'$'+Math.round(v)},grid:{color:'rgba(255,255,255,.06)'}}},plugins:{legend:{display:false},tooltip:{callbacks:{title:()=>'',label:c=>usd2(c.parsed.y)}}}};
@@ -1625,7 +1638,7 @@ async function initLab(){
 let freeInit=false;
 function initFreeOnce(){
   if(freeInit) return; freeInit=true;
-  ['cStart','cContrib','cRate','cYears'].forEach(id=>{setFill($('#'+id)); $('#'+id).addEventListener('input',drawCompound);});
+  ['cStart','cContrib','cRate','cYears'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener('input',drawCompound); });
   document.querySelectorAll('#cFreq button,#cTiming button,#cComp button').forEach(b=>b.addEventListener('click',function(){
     this.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on')); this.classList.add('on'); drawCompound();
   }));
