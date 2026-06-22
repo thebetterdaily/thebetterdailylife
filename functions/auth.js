@@ -72,6 +72,8 @@ export async function onRequest(context) {
       case 'change-password': return await changePassword(body, request, KV, headers);
       case 'reset-request':   return await resetRequest(body, KV, env, context, headers);
       case 'reset-confirm':   return await resetConfirm(body, KV, headers);
+      case 'export-data':     return await exportData(body, request, KV, headers);
+      case 'delete-account':  return await deleteAccount(body, request, KV, headers);
       default:                return json({ ok: false, error: 'unknown_action' }, 400, headers);
     }
   } catch (e) {
@@ -86,13 +88,16 @@ async function signup(body, KV, env, headers) {
   if (!email) return json({ ok: false, error: 'invalid_email' }, 400, headers);
   const pwErr = passwordError(body.password);
   if (pwErr) return json({ ok: false, error: pwErr }, 400, headers);
+  // Eligibility: accounts are for adults (18+) or a parent/teacher acting for a child.
+  // Enforced server-side so it can't be bypassed by editing the page.
+  if (body.adult !== true) return json({ ok: false, error: 'adult_required' }, 400, headers);
 
   const userKey = 'user:' + email;
   if (await KV.get(userKey)) return json({ ok: false, error: 'account_exists' }, 409, headers);
 
   const hash = await createPasswordRecord(body.password);
   const newsletter = !!body.newsletter;
-  await KV.put(userKey, JSON.stringify({ email, hash, createdAt: Date.now(), newsletter }));
+  await KV.put(userKey, JSON.stringify({ email, hash, createdAt: Date.now(), newsletter, adult: true, adultAt: Date.now() }));
 
   const token = await newSession(KV, email);
 
@@ -137,7 +142,9 @@ async function changePassword(body, request, KV, headers) {
 
   rec.hash = await createPasswordRecord(body.newPassword);
   await KV.put('user:' + sess.email, JSON.stringify(rec));
-  return json({ ok: true }, 200, headers);
+  await revokeAllSessions(KV, sess.email);          // sign out everywhere else
+  const token2 = await newSession(KV, sess.email);  // keep the current device signed in
+  return json({ ok: true, token: token2 }, 200, headers);
 }
 
 async function resetRequest(body, KV, env, context, headers) {
@@ -192,9 +199,35 @@ async function resetConfirm(body, KV, headers) {
   rec.hash = await createPasswordRecord(body.newPassword);
   await KV.put('user:' + email, JSON.stringify(rec));
   await KV.delete('reset:' + token);
+  await revokeAllSessions(KV, email);            // a password reset invalidates old sessions
 
   const sessToken = await newSession(KV, email); // log in immediately after a successful reset
   return json({ ok: true, token: sessToken, email }, 200, headers);
+}
+
+async function exportData(body, request, KV, headers) {
+  const token = bearer(request) || body.token;
+  const sess = await getSession(KV, token);
+  if (!sess) return json({ ok: false, error: 'not_authenticated' }, 401, headers);
+  const rec = await getUser(KV, sess.email);
+  if (!rec) return json({ ok: false, error: 'not_found' }, 404, headers);
+  let portfolio = null;
+  try { const pf = await KV.get('pf:email:' + sess.email); portfolio = pf ? JSON.parse(pf) : null; } catch (e) {}
+  const account = { email: rec.email, createdAt: rec.createdAt, newsletter: !!rec.newsletter, adult: !!rec.adult, adultAt: rec.adultAt || null };
+  return json({ ok: true, data: { account, portfolio } }, 200, headers);
+}
+
+async function deleteAccount(body, request, KV, headers) {
+  const token = bearer(request) || body.token;
+  const sess = await getSession(KV, token);
+  if (!sess) return json({ ok: false, error: 'not_authenticated' }, 401, headers);
+  const email = sess.email;
+  await revokeAllSessions(KV, email);
+  await KV.delete('user:' + email).catch(() => {});
+  await KV.delete('pf:email:' + email).catch(() => {});
+  await KV.delete('rstwait:' + email).catch(() => {});
+  // Note: the newsletter (Beehiiv) is a separate system with its own unsubscribe link.
+  return json({ ok: true }, 200, headers);
 }
 
 // ------------------------ users / sessions ------------------------
@@ -207,7 +240,32 @@ async function getUser(KV, email) {
 async function newSession(KV, email) {
   const token = randomToken();
   await KV.put('sess:' + token, JSON.stringify({ email, exp: nowSec() + SESSION_TTL }), { expirationTtl: SESSION_TTL });
+  await indexSession(KV, email, token);
   return token;
+}
+// Track each user's active session tokens so we can revoke them all (on password
+// change/reset or account deletion) without an extra KV read on every request.
+async function indexSession(KV, email, token) {
+  try {
+    const key = 'usess:' + email;
+    let list = [];
+    const raw = await KV.get(key);
+    if (raw) { try { list = JSON.parse(raw) || []; } catch { list = []; } }
+    list.push(token);
+    if (list.length > 25) list = list.slice(-25);
+    await KV.put(key, JSON.stringify(list), { expirationTtl: SESSION_TTL });
+  } catch (e) { /* best-effort index */ }
+}
+async function revokeAllSessions(KV, email) {
+  try {
+    const key = 'usess:' + email;
+    const raw = await KV.get(key);
+    if (raw) {
+      let list = []; try { list = JSON.parse(raw) || []; } catch { list = []; }
+      await Promise.all(list.map(t => KV.delete('sess:' + t).catch(() => {})));
+    }
+    await KV.delete(key);
+  } catch (e) { /* best-effort */ }
 }
 async function getSession(KV, token) {
   if (!token || String(token).length > 200) return null;

@@ -16,7 +16,7 @@ export async function onRequest(context) {
   const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 
   if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: { ...headers, 'Access-Control-Allow-Methods': 'GET,POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
+    return new Response(null, { headers: { ...headers, 'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
   }
 
   const KV = env.PORTFOLIOS;
@@ -62,6 +62,10 @@ export async function onRequest(context) {
     if (str.length > 20000) return json({ error: 'too large' }, 413, headers);
     await KV.put(key, str);
     return json({ ok: true }, 200, headers);
+  }
+  if (request.method === 'DELETE') {
+    await KV.delete(key);
+    return json({ ok: true, deleted: true }, 200, headers);
   }
   return json({ error: 'method not allowed' }, 405, headers);
 }
